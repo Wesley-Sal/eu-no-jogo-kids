@@ -1,8 +1,8 @@
-# Eu no Jogo Kids — versão 10
+# Eu no Jogo Kids — versão 11
 
 Jogo infantil em que a criança coloca o próprio rosto num personagem, escolhe fantasias e brinca em casa, na escola, no parque e no castelo, com amigos.
 
-Esta é a versão 10 (inclui **Meu mundo**, **fachada** e **Minha casa**). O jogo completo roda no aparelho, e o modo online usa amigos simulados. O servidor (login real e amigos de verdade) é a próxima etapa.
+Esta é a versão 11 (inclui **Meu mundo**, **fachada** e **Minha casa**). O jogo completo roda no aparelho, e o modo online usa amigos simulados. O servidor (login real e amigos de verdade) é a próxima etapa.
 
 ## Instalar no Android (APK)
 
@@ -65,6 +65,8 @@ python3 -m http.server 8080
 - **Professora Ana (`quiz.js`):** na escola, toque na professora, escolha o tema (Matemática, Letras e palavras, Animais, Cores e formas, Natureza e corpo) e responda 10 perguntas adaptadas à idade. No fim sai a **nota de 0 a 10**, estrelas e a melhor nota de cada tema fica guardada no boletim.
 - **Minha roupa (`outfit.js`):** foto de uma camiseta/vestido vira a roupa do personagem em estilo desenho (fica só no aparelho; online vão só as cores).
 - **Cavalete no quarto e Quadro de desenho:** na Casa do jogo há um cavalete 🎨; nos cômodos fotografados dá para marcar um "Quadro de desenho". O desenho fica pendurado no lugar.
+- **Tela limpa:** em cima só 🏠, personagem, ⭐, 📍 cômodo (nas casas da família), 🗺️ Mapa e ☰ Menu (fantasias, bichinhos, avatar, foto, modo online/offline, fotografar cômodo, tela cheia, pais). Embaixo: botão 🎮 Fazer, 💬 Falar (só online) e 🔍 zoom.
+- **12 brincadeiras no Fazer:** as 6 de antes + pular, dar estrelinha, bater palmas, bolhas de sabão, soltar pipa e tocar violão (as favoritas do perfil aparecem primeiro com ❤️).
 - **Zoom no jogo:** botões ＋/1×/− na lateral, pinça com dois dedos ou roda do mouse; a câmera segue o personagem.
 - **Rosto centralizado:** ao escolher a foto, o jogo acha o rosto (`locateFace`) e já centraliza e aproxima no círculo.
 - **Atalhos:** botão 🏠 Início no jogo e barra "🏡 Minha casa: 📷 Fotografar cômodo" (cria a "Minha casa" sozinha se ainda não existir).

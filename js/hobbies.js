@@ -9,13 +9,22 @@ const HOBBIES = [
   { id: 'ler', n: 'Ler', e: '📚' },
   { id: 'cantar', n: 'Cantar', e: '🎤' },
   { id: 'corda', n: 'Pular corda', e: '➰' },
+  { id: 'pular', n: 'Pular', e: '🦘' },
+  { id: 'girar', n: 'Dar estrelinha', e: '🤸' },
+  { id: 'palmas', n: 'Bater palmas', e: '👏' },
+  { id: 'bolhas', n: 'Bolhas de sabão', e: '🫧' },
+  { id: 'pipa', n: 'Soltar pipa', e: '🪁' },
+  { id: 'violao', n: 'Tocar violão', e: '🎸' },
 ];
-const HOBBY_PRAISE = { bola: 'Que embaixadinha! ⚽', desenhar: 'Que desenho lindo! 🎨', dancar: 'Arrasou na dança! 💃', ler: 'Que livro é esse? 📚', cantar: 'Canta mais! 🎶', corda: 'Uau, quanto pulo!' };
-const HOBBY_VERB = { bola: 'jogar bola', desenhar: 'desenhar', dancar: 'dançar', ler: 'ler', cantar: 'cantar', corda: 'pular corda' };
+const HOBBY_PRAISE = { pular: 'Que pulo alto! 🦘', girar: 'Uau, que estrelinha! 🤸', palmas: 'Eba! 👏👏', bolhas: 'Que bolhas lindas! 🫧', pipa: 'Sua pipa tá alta! 🪁', violao: 'Toca mais uma! 🎸', bola: 'Que embaixadinha! ⚽', desenhar: 'Que desenho lindo! 🎨', dancar: 'Arrasou na dança! 💃', ler: 'Que livro é esse? 📚', cantar: 'Canta mais! 🎶', corda: 'Uau, quanto pulo!' };
+const HOBBY_VERB = { pular: 'pular', girar: 'dar estrelinha', palmas: 'bater palmas', bolhas: 'fazer bolhas', pipa: 'soltar pipa', violao: 'tocar violão', bola: 'jogar bola', desenhar: 'desenhar', dancar: 'dançar', ler: 'ler', cantar: 'cantar', corda: 'pular corda' };
 
 function actOpts(o, t) {
   if (o.act === 'dancar') return { tilt: Math.sin(t * 7) * 0.16, lift: Math.abs(Math.sin(t * 7)) * 5 };
   if (o.act === 'corda') return { lift: Math.abs(Math.sin(o.actT * 6.5)) * 13 };
+  if (o.act === 'pular') { const p = (o.actT * 1.6) % 1; return { lift: Math.sin(p * Math.PI) * 55 }; }
+  if (o.act === 'girar') { const p = (o.actT * 0.8) % 1; return { spin: p < 0.6 ? (p / 0.6) * TAU : 0, lift: p < 0.6 ? Math.sin(p / 0.6 * Math.PI) * 26 : 0 }; }
+  if (o.act === 'palmas' || o.act === 'violao') return { tilt: Math.sin(t * 5) * 0.06 };
   return null;
 }
 function notes(c, x, y, t, n) {
@@ -74,6 +83,33 @@ function drawActFront(c, o, s, t) {
     }
     case 'cantar': c.strokeStyle = '#2B2238'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(19, -29); c.lineTo(15, -60); c.stroke(); circ(c, 14, -64, 6, '#9AA5B5'); notes(c, 30, -104, t, 3); break;
     case 'dancar': notes(c, 0, -124, t, 3); break;
+    case 'violao': {
+      c.save(); c.translate(2, -38); c.rotate(-0.5);
+      ell(c, 0, 6, 12, 10, 0, '#C77B3A'); ell(c, 0, -6, 9, 8, 0, '#C77B3A'); circ(c, 0, 2, 3.5, '#5A3A22'); fr(c, -2, -40, 4, 32, 2, '#8E5E33'); fr(c, -4, -46, 8, 8, 2, '#5A3A22');
+      c.restore(); notes(c, 26, -110, t, 3); break;
+    }
+    case 'palmas': {
+      c.font = '20px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle';
+      for (let i = 0; i < 3; i++) { const p = (t * 0.9 + i / 3) % 1; c.globalAlpha = 1 - p; c.fillText('👏', (i - 1) * 22, -110 - p * 50); }
+      c.globalAlpha = 1; if (Math.sin(t * 12) > 0.6) { c.fillStyle = '#FFD34D'; starPath(c, 0, -52, 4, 7, 2.5, t); c.fill(); }
+      break;
+    }
+    case 'bolhas': {
+      c.strokeStyle = '#8E5E33'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(19, -29); c.lineTo(26, -56); c.stroke();
+      c.strokeStyle = '#5BC0FF'; c.lineWidth = 2; c.beginPath(); c.arc(27, -62, 6, 0, TAU); c.stroke();
+      for (let i = 0; i < 6; i++) { const p = (t * 0.35 + i / 6) % 1, x = 30 + p * 70 + Math.sin(p * 9 + i) * 10, y = -62 - p * 90, r = 4 + (i % 3) * 3;
+        c.globalAlpha = 1 - p; c.strokeStyle = ['#8FD3FF', '#FF9EC4', '#B49BFF'][i % 3]; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke(); circ(c, x - r * 0.35, y - r * 0.35, r * 0.25, 'rgba(255,255,255,.9)'); }
+      c.globalAlpha = 1; break;
+    }
+    case 'pipa': {
+      const kx = 70 + Math.sin(t * 1.3) * 18, ky = -190 + Math.cos(t * 1.7) * 12;
+      c.strokeStyle = 'rgba(43,34,56,.6)'; c.lineWidth = 1.3; c.beginPath(); c.moveTo(19, -30); c.quadraticCurveTo(60, -60, kx, ky + 22); c.stroke();
+      c.save(); c.translate(kx, ky); c.rotate(Math.sin(t * 2) * 0.15);
+      c.fillStyle = '#FF6FA8'; c.beginPath(); c.moveTo(0, -22); c.lineTo(16, 0); c.lineTo(0, 22); c.lineTo(-16, 0); c.closePath(); c.fill();
+      c.fillStyle = '#FFD34D'; c.beginPath(); c.moveTo(0, -22); c.lineTo(16, 0); c.lineTo(0, 0); c.closePath(); c.fill(); c.beginPath(); c.moveTo(0, 22); c.lineTo(-16, 0); c.lineTo(0, 0); c.closePath(); c.fill();
+      c.strokeStyle = '#5B3FD9'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0, 22); for (let i = 1; i <= 5; i++) c.lineTo(Math.sin(t * 4 + i) * 6, 22 + i * 8); c.stroke();
+      c.restore(); break;
+    }
     case 'corda': { const th = o.actT * 6.5, cy = -30 + Math.cos(th) * 64; c.strokeStyle = '#FF6FA8'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-20, -29); c.quadraticCurveTo(0, cy, 20, -29); c.stroke(); break; }
   }
   c.restore();

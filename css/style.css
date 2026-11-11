@@ -291,3 +291,49 @@ body.playing{overflow:hidden}
 .zoom-ctl button{font:inherit;font-weight:800;font-size:20px;width:46px;height:46px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--roxo);box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer}
 .zoom-ctl #zReset{font-size:12px}
 @media(max-height:500px){.zoom-ctl button{width:38px;height:38px;font-size:17px}}
+
+/* ---------- interface enxuta do jogo ---------- */
+.iconbtn{font:inherit;font-size:22px;width:46px;height:46px;border-radius:50%;border:0;background:rgba(255,255,255,.94);box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.iconbtn.pink{background:var(--rosa)}
+.roompill{font:inherit;font-weight:800;font-size:15px;border:0;border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.94);color:var(--tinta);box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage .game-top{flex-wrap:nowrap;align-items:center}
+.stage .score{font-size:17px;padding:5px 14px;flex:none}
+.fabs{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:7;display:flex;align-items:flex-end;gap:10px}
+.fab{font:inherit;border:0;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tinta)}
+.fab.small{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.94);font-size:22px;line-height:1}
+.fab.small span{font-size:10px;font-weight:800;color:var(--roxo)}
+.fab.big{width:86px;height:86px;border-radius:50%;background:linear-gradient(#FF8FB8,#FF5E9C);color:#fff;font-weight:800;font-size:14px;box-shadow:0 5px 0 #D84B85,0 8px 18px rgba(0,0,0,.3)}
+.fab.big b{font-size:34px;line-height:1;margin-bottom:2px}
+.fab.big.on{background:linear-gradient(#9C85FF,#5B3FD9);box-shadow:0 5px 0 #3E27A8,0 8px 18px rgba(0,0,0,.3)}
+.pop{position:absolute;z-index:8;background:rgba(255,255,255,.97);border-radius:22px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:pop .18s ease;max-height:70vh;overflow:auto}
+.pop-title{font-weight:800;font-size:16px;margin:0 4px 8px;color:var(--suave)}
+.pop-menu{top:66px;right:max(10px,env(safe-area-inset-right));width:min(340px,92vw)}
+.pop-menu .mode{display:flex;width:100%;margin-bottom:10px}
+.pop-menu .mode button{flex:1}
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mitem,.act{font:inherit;font-weight:700;font-size:13px;border:2px solid transparent;background:#F7F3FF;border-radius:16px;padding:8px 4px;cursor:pointer;color:var(--tinta);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;line-height:1.15;text-align:center}
+.mitem b,.act b{font-size:28px;line-height:1.1}
+.act i{position:absolute;top:2px;right:4px;font-style:normal;font-size:11px}
+.act.on{border-color:var(--roxo);background:#ECE4FF}
+.act.stop{background:#fff;border:2px dashed #CDBFFF}
+.pop-do{right:max(12px,env(safe-area-inset-right));bottom:112px;width:min(420px,94vw)}
+.pop-do #doRow{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}
+.pop-talk{right:max(12px,env(safe-area-inset-right));bottom:78px;width:min(300px,90vw)}
+.pop-talk #talk{display:flex;flex-direction:column;gap:6px}
+.pop-talk #talk button{font:inherit;font-weight:700;font-size:16px;border:2px solid var(--borda);background:#fff;border-radius:999px;padding:7px 14px;cursor:pointer;color:var(--tinta);text-align:left}
+.pop-room{top:66px;right:110px;width:min(320px,80vw)}
+.pop-room #roomBar{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+.pop-room .pop-title{grid-column:1/-1}
+.stage .hint{top:auto;bottom:24px;left:20px;transform:none;max-width:55%}
+@media(max-height:500px){
+  .iconbtn{width:40px;height:40px;font-size:19px}
+  .fab.small{width:44px;height:44px;font-size:19px}
+  .fab.big{width:72px;height:72px}.fab.big b{font-size:28px}
+  .pop-do{bottom:92px;max-height:64vh}
+  .pop-do #doRow,.pop-room #roomBar{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+  .mitem b,.act b{font-size:24px}
+  .mitem,.act{padding:6px 3px;font-size:12px}
+  .pop-menu,.pop-room{top:56px;max-height:78vh}
+  .stage .hint{bottom:16px}
+}
+@media (orientation:portrait) and (max-width:700px){ .stage .rotate-tip{bottom:auto;top:66px} }

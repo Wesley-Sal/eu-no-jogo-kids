@@ -53,6 +53,7 @@ function drawChar(c, id, face, x, y, s, t, moving, opt) {
   c.translate(0, -bob);
   if (opt.lift) c.translate(0, -opt.lift);
   if (opt.tilt) { c.translate(0, -10); c.rotate(opt.tilt); c.translate(0, 10); }
+  if (opt.spin) { c.translate(0, -55); c.rotate(opt.spin); c.translate(0, 55); }
   if (sit) c.translate(0, 10);
   const sway = Math.sin(t * 3) * 3 - (moving ? 4 : 0);
 

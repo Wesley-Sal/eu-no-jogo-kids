@@ -19,7 +19,7 @@
 <body>
 <header>
   <button class="logo" id="logoHome" type="button" aria-label="Início">Eu <b>no</b> Jogo <i>Kids</i></button>
-  <span class="chip">versão 10</span>
+  <span class="chip">versão 11</span>
 </header>
 
 <main>
@@ -210,31 +210,40 @@
   <!-- JOGO -->
   <section id="s-game" class="screen stage">
     <div class="game-top">
-      <button class="btn small alt" id="btnHome" title="Voltar ao início"><span>🏠</span><span class="lb keep">Início</span></button>
+      <button class="iconbtn" id="btnHome" title="Início" aria-label="Início">🏠</button>
       <button class="me" id="meChip" type="button" title="Trocar de jogador"><canvas id="meFace"></canvas><span id="meName"></span></button>
       <div class="score" id="score">⭐ 0</div>
-      <div class="mode"><button data-mode="offline" title="Offline">📴<span class="lb"> Offline</span></button><button data-mode="online" title="Online">🌐<span class="lb"> Online</span></button></div>
       <span class="spacer"></span>
-      <button class="btn small alt" id="btnCloset" title="Fantasias"><span>👗</span><span class="lb">Fantasias</span></button>
-      <button class="btn small pink" id="btnMap" title="Mapa e Minha casa"><span>🗺️</span><span class="lb keep">Mapa</span></button>
-      <button class="btn small alt" id="btnPets" title="Bichinhos"><span>🐾</span><span class="lb">Bichinhos</span></button>
-      <button class="btn small alt" id="btnAvatarEdit" title="Avatar"><span>🙂</span><span class="lb">Avatar</span></button>
-      <button class="btn small alt" id="btnPhotoEdit" title="Foto"><span>📷</span><span class="lb">Foto</span></button>
-      <button class="btn small alt" id="btnParentsGame" title="Área dos pais">⚙️</button>
-      <button class="btn small alt fs-btn" title="Tela cheia">⛶</button>
+      <button class="roompill" id="roomPill" type="button" hidden></button>
+      <button class="iconbtn pink" id="btnMap" title="Mapa" aria-label="Mapa">🗺️</button>
+      <button class="iconbtn" id="btnMenu" title="Menu" aria-label="Menu">☰</button>
     </div>
+    <div class="pop pop-menu" id="menuPanel" hidden>
+      <div class="mode"><button data-mode="offline">📴 Offline · foto</button><button data-mode="online">🌐 Online · amigos</button></div>
+      <div class="menu-grid">
+        <button class="mitem" id="btnCloset"><b>👗</b>Fantasias</button>
+        <button class="mitem" id="btnPets"><b>🐾</b>Bichinhos</button>
+        <button class="mitem" id="btnAvatarEdit"><b>🙂</b>Avatar</button>
+        <button class="mitem" id="btnPhotoEdit"><b>📷</b>Minha foto</button>
+        <button class="mitem" id="btnRoomPhoto"><b>🏡</b>Fotografar cômodo</button>
+        <button class="mitem fs-btn"><b>⛶</b>Tela cheia</button>
+        <button class="mitem" id="btnParentsGame"><b>⚙️</b>Pais</button>
+      </div>
+    </div>
+    <div class="pop pop-room" id="roomPanel" hidden><div id="roomBar"></div></div>
     <div class="game-wrap" id="gameWrap">
       <canvas id="game" aria-label="Jogo"></canvas>
-      <div class="zoom-ctl"><button type="button" id="zIn" aria-label="Aproximar">＋</button><button type="button" id="zReset" aria-label="Tamanho normal">1×</button><button type="button" id="zOut" aria-label="Afastar">−</button></div>
       <div class="modebadge" id="modeBadge"></div>
-      <div class="hint" id="hint">Toque no chão para andar · toque nos objetos ✨ para brincar</div>
+      <div class="hint" id="hint">Toque no chão para andar · toque nos ✨ para brincar</div>
     </div>
     <div class="rotate-tip">🔄 Vire o celular para jogar maior</div>
-    <div class="game-bottom">
-      <div class="talk roombar" id="roomBar" hidden></div>
-      <div class="talk" id="doRow"><span>Fazer:</span></div>
-      <div class="talk" id="talk"><span>Falar:</span></div>
+    <div class="fabs">
+      <button class="fab small" id="fabZoom" aria-label="Zoom">🔍<span id="zLbl">1×</span></button>
+      <button class="fab small" id="fabTalk" aria-label="Falar">💬</button>
+      <button class="fab big" id="fabDo"><b>🎮</b>Fazer</button>
     </div>
+    <div class="pop pop-do" id="doPanel" hidden><div class="pop-title">O que vamos fazer?</div><div id="doRow"></div></div>
+    <div class="pop pop-talk" id="talkPanel" hidden><div id="talk"></div></div>
     <p class="note" id="gameNote"></p>
   </section>
 </main>

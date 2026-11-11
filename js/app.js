@@ -326,7 +326,7 @@ function refreshModeUI() {
   $$('.mode button').forEach(b => { b.classList.toggle('on', b.dataset.mode === mode); b.disabled = b.dataset.mode === 'online' && !allowed; });
   const on = isOnline();
   $('#modeBadge').textContent = on ? '🌐 Online · os amigos veem seu avatar' : (App.photoFace ? '📴 Offline · sua foto, só neste aparelho' : '📴 Offline · só neste aparelho');
-  $('#talk').style.display = on ? 'flex' : 'none';
+  $('#fabTalk').hidden = !on; if (!on) $('#talkPanel').hidden = true;
   $('#gameNote').textContent = on
     ? 'Modo online: você aparece como avatar cartoon. Lia, Theo e Bia são amigos de teste; na versão online entram só amigos aprovados pelos pais.'
     : 'Modo offline: você brinca sozinho, com a sua foto. Nada sai do aparelho.';
@@ -362,33 +362,49 @@ function startGame(force) {
   const p = App.profile; if (!p) return show('s-home');
   show('s-game');
   if (force || !game.started || game.scene !== p.scene) { game.started = true; gameSetScene(p.scene); p.scene = game.scene; if (isOnline()) Friends.join(); }
-  refreshModeUI(); updateTopBar(); buildDoRow(); buildRoomBar();
+  refreshModeUI(); updateTopBar(); buildDoRow(); buildRoomBar(); closePops();
+  if (App.hintShown) $('#hint').style.opacity = 0; App.hintShown = true;
 }
 const PHRASES = ['Oi! 👋', 'Vamos brincar?', 'Que legal!', 'Hahaha 😂', 'Você é demais! ⭐', '❤️'];
-PHRASES.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', () => gameSay(t)); $('#talk').appendChild(b); });
+PHRASES.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', () => { gameSay(t); closePops(); }); $('#talk').appendChild(b); });
 function buildDoRow() {
-  const el = $('#doRow'); el.innerHTML = '<span>Fazer:</span>';
-  const list = App.profile && App.profile.hobbies.length ? App.profile.hobbies : ['bola', 'desenhar', 'dancar'];
+  const el = $('#doRow'); el.innerHTML = '';
+  const mine = App.profile && App.profile.hobbies ? App.profile.hobbies : [];
+  const list = mine.concat(HOBBIES.map(h => h.id).filter(id => !mine.includes(id)));
   list.forEach(id => {
     const h = HOBBIES.find(x => x.id === id); if (!h) return;
-    const b = document.createElement('button'); b.type = 'button'; b.dataset.act = id; b.textContent = h.e + ' ' + h.n;
-    b.addEventListener('click', () => { gameHobby(id); $('#hint').style.opacity = 0; }); el.appendChild(b);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'act'; b.dataset.act = id; b.innerHTML = '<b>' + h.e + '</b>' + h.n + (mine.includes(id) ? '<i>❤️</i>' : '');
+    b.addEventListener('click', () => { closePops(); gameHobby(id); $('#hint').style.opacity = 0; }); el.appendChild(b);
   });
+  const stop = document.createElement('button'); stop.type = 'button'; stop.className = 'act stop'; stop.innerHTML = '<b>✋</b>Parar';
+  stop.addEventListener('click', () => { closePops(); if (game.player.act) gameHobby(game.player.act); }); el.appendChild(stop);
   refreshDoRow();
 }
-function refreshDoRow() { $$('#doRow button').forEach(b => b.classList.toggle('on', b.dataset.act === game.player.act && !game.player.script)); }
+function refreshDoRow() {
+  const a = !game.player.script && game.player.act;
+  $$('#doRow button').forEach(b => b.classList.toggle('on', b.dataset.act === a));
+  const h = a && HOBBIES.find(x => x.id === a); $('#fabDo').innerHTML = h ? '<b>' + h.e + '</b>Trocar' : '<b>🎮</b>Fazer'; $('#fabDo').classList.toggle('on', !!h);
+}
+/* ---------- painéis compactos ---------- */
+function closePops(except) { ['menuPanel', 'doPanel', 'talkPanel', 'roomPanel'].forEach(id => { if (id !== except) $('#' + id).hidden = true; }); }
+function togglePop(id) { const el = $('#' + id), open = el.hidden; closePops(id); el.hidden = !open; Sound.tap(); }
+$('#btnMenu').addEventListener('click', () => togglePop('menuPanel'));
+$('#fabDo').addEventListener('click', () => togglePop('doPanel'));
+$('#fabTalk').addEventListener('click', () => togglePop('talkPanel'));
+$('#roomPill').addEventListener('click', () => togglePop('roomPanel'));
+$$('#menuPanel .mitem, #menuPanel .mode button').forEach(b => b.addEventListener('click', () => setTimeout(closePops, 0)));
+$('#btnRoomPhoto').addEventListener('click', () => parentGate(() => { const pl = Home.placeOfScene(game.scene) || Home.places()[0]; RoomEd.open(null, pl ? pl.id : null); }));
 function toWorld(e) {
   const r = gameC.getBoundingClientRect(), z = game.zoom || 1;
   const vx = (e.clientX - r.left) / r.width * W, vy = (e.clientY - r.top) / r.height * H;
   return { x: (game.camX || W / 2) + (vx - W / 2) / z, y: (game.camY || H / 2) + (vy - H / 2) / z };
 }
 /* zoom: botões, pinça com dois dedos e roda do mouse */
-function setZoom(z) { game.zoom = clamp(z, 1, 3); $('#zReset').textContent = (Math.round(game.zoom * 10) / 10) + '×'; }
-$('#zIn').addEventListener('click', () => setZoom((game.zoom || 1) + 0.5));
-$('#zOut').addEventListener('click', () => setZoom((game.zoom || 1) - 0.5));
-$('#zReset').addEventListener('click', () => setZoom(game.zoom > 1 ? 1 : 2.5));
+function setZoom(z) { game.zoom = clamp(z, 1, 3); $('#zLbl').textContent = (Math.round(game.zoom * 10) / 10) + '×'; }
+$('#fabZoom').addEventListener('click', () => { const z = game.zoom || 1; setZoom(z < 1.5 ? 1.8 : z < 2.4 ? 2.7 : 1); Sound.tap(); });
 const touches = new Map(); let pinch = null;
 gameC.addEventListener('pointerdown', e => {
+  closePops();
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: game.zoom || 1 }; return; }
   if (touches.size > 2 || pinch) return;
@@ -408,7 +424,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { const k = KEYMAP[e.key]; if (k) game.keys[k] = false; });
 $('#meChip').addEventListener('click', () => show('s-home'));
-$('#btnHome').addEventListener('click', () => show('s-home'));
+$('#btnHome').addEventListener('click', () => { closePops(); show('s-home'); });
 $('#btnCloset').addEventListener('click', () => openSheet('Fantasias', g => {
   const info = document.createElement('p'); info.className = 'small'; info.textContent = 'Você tem ' + App.profile.stars + ' ⭐. Pegue estrelas e brinque com os objetos ✨ para liberar fantasias novas!';
   g.appendChild(info); const grid = document.createElement('div'); grid.className = 'costumes'; g.appendChild(grid); buildCostumeGrid(grid, true);
@@ -422,27 +438,19 @@ function onSceneChange(id) {
   buildRoomBar();
 }
 function buildRoomBar() {
-  const bar = $('#roomBar'); const pl = Home.placeOfScene(game.scene);
-  if (!pl) {
-    bar.hidden = false; bar.innerHTML = '';
-    const t = document.createElement('b'); t.textContent = '🏡 Minha casa:'; bar.appendChild(t);
-    Home.places().forEach(p2 => { if (!Home.roomsOf(p2.id).length) return; const b = document.createElement('button'); b.type = 'button'; b.textContent = p2.icon + ' ' + p2.name;
-      b.addEventListener('click', () => { const rs = Home.roomsOf(p2.id), f = Home.facadeOf(p2.id); game.fade = 1; gameSetScene(Home.sceneId(f || rs[0])); if (isOnline()) Friends.join(); }); bar.appendChild(b); });
-    const add = document.createElement('button'); add.type = 'button'; add.className = 'add'; add.textContent = '📷 Fotografar cômodo';
-    add.addEventListener('click', () => parentGate(() => { const p0 = Home.places()[0]; RoomEd.open(null, p0 ? p0.id : null); })); bar.appendChild(add);
-    return;
-  }
-  bar.hidden = false; bar.innerHTML = '';
-  const t = document.createElement('b'); t.textContent = '📍 ' + pl.icon + ' ' + pl.name + ':'; bar.appendChild(t);
+  const bar = $('#roomBar'), pill = $('#roomPill'), pl = Home.placeOfScene(game.scene);
+  bar.innerHTML = '';
+  if (!pl) { pill.hidden = true; $('#roomPanel').hidden = true; return; }
+  const cur = Home.byScene(game.scene); pill.hidden = false; pill.textContent = '📍 ' + (cur ? cur.emoji + ' ' + cur.name : pl.name) + ' ▾';
+  const t = document.createElement('div'); t.className = 'pop-title'; t.textContent = pl.icon + ' ' + pl.name; bar.appendChild(t);
   Home.roomsOf(pl.id).forEach(r => {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = r.emoji + ' ' + r.name; const sid = Home.sceneId(r);
-    if (sid === game.scene) b.className = 'on';
-    b.addEventListener('click', () => { if (sid !== game.scene) { game.fade = 1; gameSetScene(sid); if (isOnline()) Friends.join(); } });
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'act'; b.innerHTML = '<b>' + r.emoji + '</b>' + esc(r.name); const sid = Home.sceneId(r);
+    if (sid === game.scene) b.classList.add('on');
+    b.addEventListener('click', () => { closePops(); if (sid !== game.scene) { game.fade = 1; gameSetScene(sid); if (isOnline()) Friends.join(); } });
     bar.appendChild(b);
   });
-  const add = document.createElement('button'); add.type = 'button'; add.className = 'add'; add.textContent = '＋ Cômodo';
-  add.addEventListener('click', () => parentGate(() => RoomEd.open(null, pl.id))); bar.appendChild(add);
-  if (!Home.facadeOf(pl.id)) { const f = document.createElement('button'); f.type = 'button'; f.className = 'add'; f.textContent = '＋ 🏠 Fachada'; f.addEventListener('click', () => parentGate(() => RoomEd.open(null, pl.id, 'fachada'))); bar.appendChild(f); }
+  const add = document.createElement('button'); add.type = 'button'; add.className = 'act stop'; add.innerHTML = '<b>📷</b>Novo cômodo';
+  add.addEventListener('click', () => { closePops(); parentGate(() => RoomEd.open(null, pl.id, Home.facadeOf(pl.id) ? null : 'fachada')); }); bar.appendChild(add);
 }
 
 $('#btnAvatarEdit').addEventListener('click', () => { App.onboarding = false; show('s-avatar'); });
@@ -587,7 +595,7 @@ function loop(now) {
   if (App.current === 's-map') World.render(T, dt);
   if (App.current === 's-game' && !anyOverlay()) {
     App.playTime += dt; gameUpdate(dt); gameRender(gameG, game.t); checkTime();
-    const sc = '⭐ ' + App.profile.stars + '  ·  rodada ' + game.roundGot + '/' + game.roundTotal; if (sc !== App.lastScore) { App.lastScore = sc; $('#score').textContent = sc; }
+    const sc = '⭐ ' + App.profile.stars; if (sc !== App.lastScore) { App.lastScore = sc; $('#score').textContent = sc; }
   }
   requestAnimationFrame(loop);
 }
