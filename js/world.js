@@ -25,7 +25,7 @@ const World = {
     const out = SCENES.map(s => ({ kind: 'builtin', id: s.id, name: s.name, emoji: s.emoji, slot: this.BUILTIN[s.id] }));
     Home.places().slice(0, MAX_PLACES).forEach((p, i) => out.push({ kind: 'place', id: p.id, name: p.name, emoji: p.icon, color: p.color, place: p, slot: this.USER_SLOTS[i] }));
     const n = Math.min(Home.places().length, MAX_PLACES);
-    if (n < MAX_PLACES) out.push({ kind: 'new', id: 'new', name: 'Novo lugar', emoji: '＋', slot: this.USER_SLOTS[n] });
+    if (n < MAX_PLACES) out.push({ kind: 'new', id: 'new', name: n ? 'Novo lugar' : 'Criar minha casa', emoji: '＋', slot: this.USER_SLOTS[n] });
     out.forEach(i => { i.x = this.SLOTS[i.slot][0]; i.y = this.SLOTS[i.slot][1]; });
     return out;
   },
@@ -119,7 +119,7 @@ const World = {
     g.fillStyle = sel ? '#fff' : '#2B2238'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, it.x, it.y + 20);
   },
   render(t, dt) {
-    const g = this.g; g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const g = this.g, k = this.rs || DPR; g.setTransform(k, 0, 0, k, 0, 0);
     if (!this.bg) { this.bg = document.createElement('canvas'); this.bg.width = W * DPR; this.bg.height = H * DPR; const bg = this.bg.getContext('2d'); bg.setTransform(DPR, 0, 0, DPR, 0, 0); this.drawGround(bg); }
     g.drawImage(this.bg, 0, 0, W, H);
     for (let i = 0; i < 3; i++) { const x = ((t * 14 + i * 360) % (W + 200)) - 100; g.fillStyle = 'rgba(255,255,255,.85)'; [[0, 0, 22], [24, -8, 26], [50, 0, 20]].forEach(([a, b, r]) => circ(g, x + a, 60 + i * 30 + b, r)); }

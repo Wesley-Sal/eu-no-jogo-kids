@@ -344,7 +344,7 @@ function drawHud(c) {
   }
 }
 function gameRender(c, t) {
-  c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const k = game.rs || DPR; c.setTransform(k, 0, 0, k, 0, 0);
   c.drawImage(getBg(game.scene), 0, 0, W, H);
   drawSceneBack(c, t);
   if (game.marker) { const m = game.marker; c.strokeStyle = `rgba(91,63,217,${1 - m.t / 0.7})`; c.lineWidth = 3; c.beginPath(); c.ellipse(m.x, m.y, 10 + m.t * 30, 4 + m.t * 10, 0, 0, TAU); c.stroke(); }
@@ -394,7 +394,7 @@ function gameRender(c, t) {
     c.restore();
   });
   c.globalAlpha = 1;
-  drawHud(c);
+  if (!document.body.classList.contains('playing')) drawHud(c);
   if (game.fade > 0) { c.fillStyle = 'rgba(43,34,56,' + game.fade + ')'; c.fillRect(0, 0, W, H); }
 }
 

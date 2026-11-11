@@ -8,7 +8,8 @@ const App = {
 };
 
 /* ---------- funções usadas pelo motor do jogo ---------- */
-function getPlayerFace() { const p = App.profile; return (p && p.mode === 'offline' && App.photoFace) ? App.photoFace : App.cartoonFace; }
+function getPlayerFace() { const p = App.profile; return (p && p.mode === 'offline' && App.photoFace) ? (App.photoStyled || App.photoFace) : App.cartoonFace; }
+function restyle() { const p = App.profile; App.photoStyled = p && App.photoFace ? stylizePhoto(App.photoFace, p.avatar, p.photoStyle || 'mistura') : null; }
 function currentCostume() { return App.profile ? App.profile.costume : 'heroi'; }
 function playerName() { return App.profile ? App.profile.name : 'Eu'; }
 function isOnline() { return !!(App.profile && App.profile.mode === 'online' && Store.data.settings.online); }
@@ -34,6 +35,8 @@ const SCREENS = ['s-home', 's-parent', 's-photo', 's-avatar', 's-costume', 's-ro
 function show(id) {
   App.current = id;
   SCREENS.forEach(s => $('#' + s).classList.toggle('active', s === id));
+  document.body.classList.toggle('playing', id === 's-game' || id === 's-map');
+  requestAnimationFrame(fitStage);
   if (id === 's-home') renderHome();
   if (id === 's-parent') renderParent();
   if (id === 's-photo') renderPhoto();
@@ -75,7 +78,7 @@ function renderHome() {
 }
 async function selectProfile(p) {
   App.profile = p;
-  App.photoFace = await faceFromDataURL(p.photo);
+  App.photoFace = await faceFromDataURL(p.photo); restyle();
   App.cartoonFace = makeCartoonFace(p.avatar);
   if (!Store.data.settings.online) p.mode = 'offline';
   game.started = false;
@@ -140,7 +143,7 @@ $('#btnProfileSave').addEventListener('click', () => {
   }
   const p = Store.newProfile(name, form.age, form.hobbies);
   Store.data.profiles.push(p); Store.save();
-  App.profile = p; App.photoFace = null; App.cartoonFace = makeCartoonFace(p.avatar);
+  App.profile = p; App.photoFace = null; App.photoStyled = null; App.cartoonFace = makeCartoonFace(p.avatar);
   App.onboarding = true; game.started = false;
   show('s-photo');
 });
@@ -202,21 +205,27 @@ $('#btnPhotoNext').addEventListener('click', () => {
   App.photoFace = makeFace();
   try { p.photo = App.photoFace.toDataURL('image/jpeg', 0.85); } catch (e) { p.photo = null; }
   p.auto = detectFromPhoto(App.photoFace, p.avatar);
-  App.cartoonFace = makeCartoonFace(p.avatar); Store.save(); updateTopBar();
+  App.cartoonFace = makeCartoonFace(p.avatar); restyle(); Store.save(); updateTopBar();
   show('s-avatar');
 });
 $('#btnKeepPhoto').addEventListener('click', () => show('s-avatar'));
 $('#btnNoPhoto').addEventListener('click', () => {
   const p = App.profile; if (!p) return;
-  p.photo = null; p.auto = { skin: false, hair: false }; App.photoFace = null; Store.save(); updateTopBar();
+  p.photo = null; p.auto = { skin: false, hair: false }; App.photoFace = null; App.photoStyled = null; Store.save(); updateTopBar();
   show('s-avatar');
 });
 
 /* ---------- avatar ---------- */
 const cmpPc = setupCanvas($('#cmpPhoto'), 96, 96), cmpCc = setupCanvas($('#cmpCartoon'), 150, 150);
 function renderAvatarPreview() {
-  const p = App.profile; App.cartoonFace = makeCartoonFace(p.avatar);
-  if (App.photoFace) drawFaceIn(cmpPc, App.photoFace, 96);
+  const p = App.profile; App.cartoonFace = makeCartoonFace(p.avatar); restyle();
+  $('#photoStyleBox').hidden = !App.photoFace;
+  if (App.photoFace) {
+    const box = $('#photoStyles'); box.innerHTML = ''; const cur = p.photoStyle || 'mistura';
+    PHOTO_STYLES.forEach(st => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tg' + (st.id === cur ? ' sel' : ''); b.textContent = st.n; b.addEventListener('click', () => { p.photoStyle = st.id; Store.save(); Sound.tap(); renderAvatarPreview(); updateTopBar(); }); box.appendChild(b); });
+    $('#photoStyleDesc').textContent = 'Modo offline: ' + PHOTO_STYLES.find(s => s.id === cur).d + '.';
+  }
+  if (App.photoFace) drawFaceIn(cmpPc, App.photoStyled || App.photoFace, 96);
   else { cmpPc.clearRect(0, 0, 96, 96); circ(cmpPc, 48, 48, 44, '#EDE6FF'); cmpPc.fillStyle = '#9C8CD9'; cmpPc.font = '700 13px ' + FONT; cmpPc.textAlign = 'center'; cmpPc.textBaseline = 'middle'; cmpPc.fillText('sem foto', 48, 48); }
   drawFaceIn(cmpCc, App.cartoonFace, 150);
   $('#recipe').textContent = JSON.stringify(Object.assign({ apelido: p.name }, avatarRecipe(p.avatar)));
@@ -318,6 +327,23 @@ $$('.mode button').forEach(b => b.addEventListener('click', () => setMode(b.data
 
 /* ---------- jogo ---------- */
 const gameC = $('#game'); const gameG = setupCanvas(gameC, W, H);
+/* ajusta o jogo/mapa para ocupar a tela inteira (mantendo a proporção 16:10) */
+function fitStage() {
+  const wrap = App.current === 's-game' ? $('#gameWrap') : App.current === 's-map' ? $('#mapWrap') : null; if (!wrap) return;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let w = vw, h = w * H / W; if (h > vh) { h = vh; w = h * W / H; }
+  wrap.style.width = Math.round(w) + 'px'; wrap.style.height = Math.round(h) + 'px';
+  const cv = wrap.querySelector('canvas'), bw = Math.round(w * DPR), bh = Math.round(h * DPR);
+  if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
+  const k = bw / W; if (cv === gameC) game.rs = k; else World.rs = k;
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
+$$('.fs-btn').forEach(b => {
+  const d = document.documentElement;
+  if (!d.requestFullscreen) { b.hidden = true; return; }
+  b.addEventListener('click', () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else d.requestFullscreen().catch(() => toast('Tela cheia não disponível aqui')); });
+});
 const meG = setupCanvas($('#meFace'), 32, 32);
 function updateTopBar() {
   const p = App.profile; if (!p) return;
@@ -359,6 +385,8 @@ $('#btnCloset').addEventListener('click', () => openSheet('Fantasias', g => {
 $('#btnMap').addEventListener('click', () => World.open());
 function onSceneChange(id) {
   const p = App.profile; if (p) { p.scene = id; const pl = Home.placeOfScene(id); if (pl) pl.lastRoom = id.slice(5); Store.save(); }
+  const room = Home.byScene(id);
+  if (room && room.photo && isOnline()) toast('🌐 No modo online o cômodo aparece desenhado. Toque em 📴 para ver a foto.');
   buildRoomBar();
 }
 function buildRoomBar() {
@@ -449,7 +477,7 @@ function openSettings() {
       const info = document.createElement('div'); info.className = 'pinfo'; info.innerHTML = esc(p.name) + '<small>' + p.age + ' anos · ⭐ ' + p.stars + ' · ' + (p.photo ? 'com foto (só no aparelho)' : 'sem foto') + '</small>';
       const ed = document.createElement('button'); ed.className = 'btn small alt'; ed.textContent = 'Editar'; ed.addEventListener('click', () => { closeSheet(); App.editing = p; show('s-parent'); });
       row.append(cv, info, ed);
-      if (p.photo) { const ph = document.createElement('button'); ph.className = 'btn small alt'; ph.textContent = 'Apagar foto'; ph.addEventListener('click', () => { p.photo = null; if (App.profile === p) { App.photoFace = null; updateTopBar(); refreshModeUI(); } Store.save(); toast('Foto apagada 🗑️'); openSettings(); }); row.appendChild(ph); }
+      if (p.photo) { const ph = document.createElement('button'); ph.className = 'btn small alt'; ph.textContent = 'Apagar foto'; ph.addEventListener('click', () => { p.photo = null; if (App.profile === p) { App.photoFace = null; App.photoStyled = null; updateTopBar(); refreshModeUI(); } Store.save(); toast('Foto apagada 🗑️'); openSettings(); }); row.appendChild(ph); }
       const del = document.createElement('button'); del.className = 'btn small danger'; del.textContent = 'Excluir';
       del.addEventListener('click', () => {
         if (!del.classList.contains('armed')) { del.classList.add('armed'); del.textContent = 'Tem certeza?'; return; }
@@ -517,7 +545,10 @@ function loop(now) {
   }
   if (App.current === 's-room') RoomEd.render(T);
   if (App.current === 's-map') World.render(T, dt);
-  if (App.current === 's-game' && !anyOverlay()) { App.playTime += dt; gameUpdate(dt); gameRender(gameG, game.t); checkTime(); }
+  if (App.current === 's-game' && !anyOverlay()) {
+    App.playTime += dt; gameUpdate(dt); gameRender(gameG, game.t); checkTime();
+    const sc = '⭐ ' + App.profile.stars + '  ·  rodada ' + game.roundGot + '/' + game.roundTotal; if (sc !== App.lastScore) { App.lastScore = sc; $('#score').textContent = sc; }
+  }
   requestAnimationFrame(loop);
 }
 

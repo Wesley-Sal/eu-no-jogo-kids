@@ -4,7 +4,7 @@
   "description": "Você dentro do jogo: foto, fantasias, sua casa e amigos.",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "any",
   "background_color": "#F4EFFF",
   "theme_color": "#5B3FD9",

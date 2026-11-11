@@ -19,7 +19,7 @@
 <body>
 <header>
   <button class="logo" id="logoHome" type="button" aria-label="Início">Eu <b>no</b> Jogo <i>Kids</i></button>
-  <span class="chip">versão 6</span>
+  <span class="chip">versão 7</span>
 </header>
 
 <main>
@@ -123,6 +123,11 @@
             <div class="arrow">→</div>
             <div class="cmp"><canvas id="cmpCartoon"></canvas><span>🌐 Online<br>seu avatar</span></div>
           </div>
+          <div class="photo-style" id="photoStyleBox">
+            <div class="flabel">Como a sua foto aparece no jogo</div>
+            <div class="toggles" id="photoStyles"></div>
+            <div class="small" id="photoStyleDesc"></div>
+          </div>
           <div class="recipe">
             <div class="rt">📡 O que vai para a internet</div>
             <code id="recipe"></code>
@@ -188,39 +193,45 @@
   </section>
 
   <!-- MAPA DO MUNDO -->
-  <section id="s-map" class="screen">
+  <section id="s-map" class="screen stage">
     <div class="game-top">
       <button class="btn small alt" id="mapBack">← Voltar</button>
-      <h2 style="margin:0">🗺️ Meu mundo</h2>
+      <h2 class="stage-title">🗺️ Meu mundo</h2>
+      <span class="spacer"></span>
+      <button class="btn small alt fs-btn" title="Tela cheia">⛶</button>
     </div>
-    <div class="game-wrap">
+    <div class="game-wrap" id="mapWrap">
       <canvas id="mapCanvas" aria-label="Mapa do mundo"></canvas>
-      <div class="hint">Toque num lugar para visitar · ＋ cria um lugar novo</div>
+      <div class="hint">Toque num lugar para visitar · ＋ fotografe a sua casa</div>
     </div>
     <p class="note">Crie lugares como a casa da vó, fotografe os cômodos e visite quando quiser. As fotos ficam só neste aparelho.</p>
   </section>
 
   <!-- JOGO -->
-  <section id="s-game" class="screen">
+  <section id="s-game" class="screen stage">
     <div class="game-top">
       <button class="me" id="meChip" type="button" title="Trocar de jogador"><canvas id="meFace"></canvas><span id="meName"></span></button>
       <div class="score" id="score">⭐ 0</div>
       <div class="mode"><button data-mode="offline" title="Offline">📴<span class="lb"> Offline</span></button><button data-mode="online" title="Online">🌐<span class="lb"> Online</span></button></div>
       <span class="spacer"></span>
       <button class="btn small alt" id="btnCloset" title="Fantasias"><span>👗</span><span class="lb">Fantasias</span></button>
-      <button class="btn small pink" id="btnMap" title="Mapa"><span>🗺️</span><span class="lb">Mapa</span></button>
+      <button class="btn small pink" id="btnMap" title="Mapa e Minha casa"><span>🗺️</span><span class="lb keep">Mapa</span></button>
       <button class="btn small alt" id="btnAvatarEdit" title="Avatar"><span>🙂</span><span class="lb">Avatar</span></button>
       <button class="btn small alt" id="btnPhotoEdit" title="Foto"><span>📷</span><span class="lb">Foto</span></button>
       <button class="btn small alt" id="btnParentsGame" title="Área dos pais">⚙️</button>
+      <button class="btn small alt fs-btn" title="Tela cheia">⛶</button>
     </div>
-    <div class="game-wrap">
+    <div class="game-wrap" id="gameWrap">
       <canvas id="game" aria-label="Jogo"></canvas>
       <div class="modebadge" id="modeBadge"></div>
       <div class="hint" id="hint">Toque no chão para andar · toque nos objetos ✨ para brincar</div>
     </div>
-    <div class="talk roombar" id="roomBar" hidden></div>
-    <div class="talk" id="doRow"><span>Fazer:</span></div>
-    <div class="talk" id="talk"><span>Falar:</span></div>
+    <div class="rotate-tip">🔄 Vire o celular para jogar maior</div>
+    <div class="game-bottom">
+      <div class="talk roombar" id="roomBar" hidden></div>
+      <div class="talk" id="doRow"><span>Fazer:</span></div>
+      <div class="talk" id="talk"><span>Falar:</span></div>
+    </div>
     <p class="note" id="gameNote"></p>
   </section>
 </main>

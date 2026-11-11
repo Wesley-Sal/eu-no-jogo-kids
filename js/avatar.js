@@ -20,7 +20,8 @@ function avatarRecipe(av) {
 }
 
 /* Desenha o rosto cartoon. Canvas 320x320 = 4x o raio da cabeça (pode ter cabelo para fora). */
-function makeCartoonFace(av) {
+function makeCartoonFace(av, opts) {
+  opts = opts || {};
   const S = 320, fc = document.createElement('canvas'); fc.width = fc.height = S;
   const g = fc.getContext('2d'); const r = 80;
   g.translate(160, 160);
@@ -35,7 +36,9 @@ function makeCartoonFace(av) {
   else if (st === 'chiquinhas') { circ(g, -r * 1.16, r * 0.08, r * 0.4); circ(g, r * 1.16, r * 0.08, r * 0.4); }
   else if (st === 'coque') { circ(g, 0, -r * 1.1, r * 0.42); }
   if (st !== 'longo' && st !== 'crespo') { circ(g, -r * 0.98, r * 0.1, r * 0.18, sk); circ(g, r * 0.98, r * 0.1, r * 0.18, sk); }
-  circ(g, 0, 0, r, sk); g.strokeStyle = 'rgba(43,34,56,.12)'; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
+  circ(g, 0, 0, r, sk);
+  if (opts.photo) { g.save(); g.beginPath(); g.arc(0, 0, r * 0.985, 0, TAU); g.clip(); g.drawImage(opts.photo, -r, -r * 0.92, 2 * r, 2 * r); g.restore(); }
+  g.strokeStyle = 'rgba(43,34,56,.14)'; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
   g.fillStyle = hc;
   if (st === 'espetado') {
     for (let i = 0; i < 5; i++) { const x = -r * 0.6 + i * r * 0.3; g.beginPath(); g.moveTo(x - r * 0.22, -r * 0.7); g.lineTo(x + (i - 2) * r * 0.04, -r * 1.32); g.lineTo(x + r * 0.22, -r * 0.7); g.closePath(); g.fill(); }
@@ -51,6 +54,7 @@ function makeCartoonFace(av) {
   if (st === 'cacheado') { for (let i = 0; i < 7; i++) circ(g, -r * 0.75 + i * r * 0.25, -r * 0.46 - Math.sin(i / 6 * Math.PI) * r * 0.12, r * 0.17); }
   if (st === 'chiquinhas') { circ(g, -r * 0.86, r * 0.02, r * 0.1, '#FF6FA8'); circ(g, r * 0.86, r * 0.02, r * 0.1, '#FF6FA8'); }
   if (st === 'coque') circ(g, 0, -r * 0.8, r * 0.1, '#FF6FA8');
+  if (!opts.photo) {
   g.strokeStyle = shade(hc, -0.25); g.lineWidth = r * 0.07; g.lineCap = 'round';
   [-1, 1].forEach(sg => { g.beginPath(); g.moveTo(sg * r * 0.48, -r * 0.15); g.quadraticCurveTo(sg * r * 0.34, -r * 0.25, sg * r * 0.18, -r * 0.18); g.stroke(); });
   const ec = EYES[av.eyes].c;
@@ -63,6 +67,7 @@ function makeCartoonFace(av) {
   if (av.freckles) { g.fillStyle = shade(sk, -0.32); [[0.45, 0.3], [0.56, 0.36], [0.5, 0.42], [0.62, 0.28]].forEach(([a, b]) => { circ(g, -r * a, r * b, r * 0.028); circ(g, r * a, r * b, r * 0.028); }); }
   g.fillStyle = '#8A2E3B'; g.beginPath(); g.moveTo(-r * 0.22, r * 0.47); g.quadraticCurveTo(0, r * 0.76, r * 0.22, r * 0.47); g.closePath(); g.fill();
   g.fillStyle = '#fff'; g.beginPath(); g.moveTo(-r * 0.16, r * 0.48); g.lineTo(r * 0.16, r * 0.48); g.lineTo(r * 0.13, r * 0.54); g.lineTo(-r * 0.13, r * 0.54); g.closePath(); g.fill();
+  }
   if (av.glasses) {
     g.strokeStyle = '#2B2238'; g.lineWidth = r * 0.06;
     [-1, 1].forEach(sg => { g.beginPath(); g.arc(sg * r * 0.33, r * 0.1, r * 0.24, 0, TAU); g.stroke(); });
@@ -127,4 +132,62 @@ function faceFromDataURL(url) {
     im.onerror = () => res(null);
     im.src = url;
   });
+}
+
+/* ---------- foto integrada ao personagem ---------- */
+const PHOTO_STYLES = [
+  { id: 'mistura', n: '🎨 Misturado', d: 'rosto real com o cabelo do avatar' },
+  { id: 'desenho', n: '✏️ Desenho', d: 'a foto vira desenho animado' },
+  { id: 'natural', n: '📷 Natural', d: 'a foto do jeito que foi tirada' },
+];
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, n >> 8 & 255, n & 255]; }
+function copyCanvas(src) { const c = document.createElement('canvas'); c.width = src.width; c.height = src.height; c.getContext('2d').drawImage(src, 0, 0); return c; }
+
+/* filtro "desenho animado": suaviza, aviva as cores, reduz tons e desenha contornos */
+function toonFilter(src) {
+  const S = src.width, out = copyCanvas(src), g = out.getContext('2d');
+  const sm = document.createElement('canvas'); sm.width = sm.height = Math.max(8, Math.round(S / 2.4));
+  sm.getContext('2d').drawImage(src, 0, 0, sm.width, sm.height);
+  g.globalAlpha = 0.6; g.imageSmoothingQuality = 'high'; g.drawImage(sm, 0, 0, S, S); g.globalAlpha = 1;
+  const id = g.getImageData(0, 0, S, S), d = id.data, L = new Float32Array(S * S);
+  for (let p = 0; p < S * S; p++) L[p] = d[p * 4] * 0.3 + d[p * 4 + 1] * 0.59 + d[p * 4 + 2] * 0.11;
+  const step = 255 / 6;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const p = y * S + x, i = p * 4; if (d[i + 3] < 10) continue;
+    let r = d[i], gg = d[i + 1], b = d[i + 2]; const avg = (r + gg + b) / 3;
+    r = avg + (r - avg) * 1.3; gg = avg + (gg - avg) * 1.3; b = avg + (b - avg) * 1.3;
+    r = r * 0.45 + Math.round(r / step) * step * 0.55; gg = gg * 0.45 + Math.round(gg / step) * step * 0.55; b = b * 0.45 + Math.round(b / step) * step * 0.55;
+    let k = 1;
+    if (x > 0 && y > 0 && x < S - 1 && y < S - 1) {
+      const gx = -L[p - S - 1] - 2 * L[p - 1] - L[p + S - 1] + L[p - S + 1] + 2 * L[p + 1] + L[p + S + 1];
+      const gy = -L[p - S - 1] - 2 * L[p - S] - L[p - S + 1] + L[p + S - 1] + 2 * L[p + S] + L[p + S + 1];
+      const m = Math.hypot(gx, gy); if (m > 70) k = clamp(1 - (m - 70) / 170, 0.42, 1);
+    }
+    d[i] = clamp(r * k, 0, 255); d[i + 1] = clamp(gg * k, 0, 255); d[i + 2] = clamp(b * k, 0, 255);
+  }
+  g.putImageData(id, 0, 0); return out;
+}
+/* aproxima a cor da pele da foto da cor da pele do avatar (para não ficar "emenda") */
+function matchSkin(src, av, amount) {
+  const out = copyCanvas(src), g = out.getContext('2d'), S = out.width;
+  const have = avgRegion(out, .28, .52, .72, .72); if (!have) return out;
+  const want = hexRgb(SKINS[av.skin]), dr = (want[0] - have[0]) * amount, dg = (want[1] - have[1]) * amount, db = (want[2] - have[2]) * amount;
+  const id = g.getImageData(0, 0, S, S), d = id.data;
+  for (let i = 0; i < d.length; i += 4) { d[i] = clamp(d[i] + dr, 0, 255); d[i + 1] = clamp(d[i + 1] + dg, 0, 255); d[i + 2] = clamp(d[i + 2] + db, 0, 255); }
+  g.putImageData(id, 0, 0); return out;
+}
+/* recorta o rosto num oval com borda suave */
+function featherOval(src) {
+  const S = src.width, out = copyCanvas(src), g = out.getContext('2d');
+  g.globalCompositeOperation = 'destination-in'; g.save(); g.translate(S / 2, S * 0.53); g.scale(0.78, 1);
+  const gr = g.createRadialGradient(0, 0, S * 0.25, 0, 0, S * 0.42); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, S * 0.5, 0, TAU); g.fill(); g.restore(); return out;
+}
+/* rosto que aparece no jogo no modo offline, conforme o estilo escolhido */
+function stylizePhoto(photo, av, style) {
+  if (!photo) return null;
+  if (style === 'natural') return photo;
+  if (style === 'desenho') { const t = toonFilter(photo); t.skin = photo.skin; return t; }
+  const face = featherOval(matchSkin(toonFilter(photo), av, 0.55));
+  return makeCartoonFace(av, { photo: face });
 }

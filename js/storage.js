@@ -18,6 +18,8 @@ const Store = {
         this.data.profiles = Array.isArray(d.profiles) ? d.profiles : [];
         this.data.homes = Array.isArray(d.homes) ? d.homes : [];
         this.data.places = Array.isArray(d.places) ? d.places : [];
+        /* versão 7: começa no modo offline (foto real, inclusive dos cômodos) */
+        if (!d.v7) { this.data.profiles.forEach(p => { p.mode = 'offline'; }); }
         /* versão 2 → 3: cômodos sem lugar vão para "Minha casa" */
         const loose = this.data.homes.filter(r => !r.placeId || !this.data.places.some(p => p.id === r.placeId));
         if (loose.length) {
@@ -28,13 +30,13 @@ const Store = {
       }
     } catch (e) { /* sem armazenamento: o jogo funciona mesmo assim */ }
   },
-  save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); return true; } catch (e) { return false; } },
+  save() { this.data.v7 = true; try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); return true; } catch (e) { return false; } },
   wipe() { try { localStorage.removeItem(this.KEY); } catch (e) { } this.data = this.blank(); },
   newProfile(name, age, hobbies) {
     return {
       id: uid(), name, age, hobbies: hobbies.slice(), photo: null,
       avatar: defaultAvatar(), auto: { skin: false, hair: false },
-      costume: 'heroi', scene: 'casa', mode: this.data.settings.online ? 'online' : 'offline',
+      costume: 'heroi', scene: 'casa', mode: 'offline', photoStyle: 'mistura',
       stars: 0, celebrated: [], created: Date.now(),
     };
   },
