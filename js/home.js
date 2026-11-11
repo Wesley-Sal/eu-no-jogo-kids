@@ -21,6 +21,7 @@ const HOME_TYPES = [
   { id: 'computador', n: 'Computador', e: '💻', pose: 'stand', dur: 4, s1: 'Fazendo a lição 💻', s2: 'Lição feita! ✅', fx: 'screen', col: '#5B3FD9' },
   { id: 'janela', n: 'Janela', e: '🌤️', pose: 'stand', dur: 2.6, s1: null, s2: null, fx: 'sky', col: '#8FD3FF' },
   { id: 'planta', n: 'Planta', e: '🌱', pose: 'stand', dur: 3, s1: 'Regando a plantinha 💧', s2: 'Cresce, plantinha! 🌱', fx: 'water', col: '#5CC46B' },
+  { id: 'quadro', n: 'Quadro de desenho', e: '🖼️', pose: 'stand', dur: 0, paint: true, col: '#FFFFFF' },
   { id: 'porta', n: 'Porta (entrar)', e: '🚪', pose: 'stand', dur: 0, door: true, col: '#8E5E33' },
   { id: 'carro', n: 'Carro', e: '🚗', pose: 'stand', dur: 3.5, s1: 'Vrum, vrum! 🚗', s2: 'Chegamos! 🏁', fx: 'car', col: '#E2464A' },
   { id: 'esconder', n: 'Esconder (borrar)', e: '🙈', privacy: true, col: '#9AA5B5' },
@@ -151,6 +152,7 @@ const Home = {
         fr(g, x, y, w, h, 10, light); g.strokeStyle = shade(col, -0.2); g.lineWidth = 3; rr(g, x, y, w, h, 10); g.stroke();
         g.beginPath(); g.moveTo(x, y + h * 0.35); g.lineTo(x + w, y + h * 0.35); g.stroke(); fr(g, x + w * 0.8, y + h * 0.12, 5, h * 0.14, 2, '#9AA5B5'); fr(g, x + w * 0.8, y + h * 0.45, 5, h * 0.2, 2, '#9AA5B5');
         break;
+      case 'quadro': fr(g, x, y, w, h, 4, '#fff'); g.strokeStyle = '#B07A45'; g.lineWidth = 4; rr(g, x, y, w, h, 4); g.stroke(); g.font = Math.round(clamp(Math.min(w, h) * 0.4, 16, 48)) + 'px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.globalAlpha = .35; g.fillText('🎨', x + w / 2, y + h / 2); g.globalAlpha = 1; break;
       case 'porta':
         fr(g, x, y, w, h, 8, shade(col, -0.1)); fr(g, x + w * 0.12, y + h * 0.08, w * 0.76, h * 0.38, 6, shade(col, 0.12)); fr(g, x + w * 0.12, y + h * 0.52, w * 0.76, h * 0.4, 6, shade(col, 0.12));
         circ(g, x + w * 0.8, y + h * 0.55, Math.max(3, w * 0.05), '#FFD34D'); break;
@@ -161,7 +163,7 @@ const Home = {
       default:
         fr(g, x, y, w, h, 14, col); g.strokeStyle = dark; g.lineWidth = 3; rr(g, x, y, w, h, 14); g.stroke();
     }
-    if (!['cama', 'sofa', 'tv', 'mesa', 'cadeira', 'janela', 'geladeira', 'computador', 'porta'].includes(o.type)) {
+    if (!['cama', 'sofa', 'tv', 'mesa', 'cadeira', 'janela', 'geladeira', 'computador', 'porta', 'quadro'].includes(o.type)) {
       g.font = Math.round(clamp(Math.min(w, h) * 0.5, 18, 64)) + 'px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t.e, x + w / 2, y + h / 2 + 2);
     }
   },
@@ -196,6 +198,17 @@ const Home = {
 
   act(o) {
     const t = homeType(o.type);
+    if (t.paint) return {
+      dur: 0,
+      start() {
+        const key = 'room:' + o.rect.id;
+        DrawPad.open('easel', (url, changed) => {
+          if (!url || !changed) return; saveDrawing(key, url); playerSay('Olha o meu quadro! 🖼️', 2.6); burst(o.rect.x + o.rect.w / 2, o.rect.y + o.rect.h / 2, 20);
+          if (!game.used.has(key)) { game.used.add(key); giveStars(1, o.rect.x + o.rect.w / 2, o.rect.y); }
+        }, getDrawing(key));
+        return 'pad';
+      },
+    };
     return {
       dur: t.dur,
       start(P) {

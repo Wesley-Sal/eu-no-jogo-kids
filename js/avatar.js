@@ -37,7 +37,10 @@ function makeCartoonFace(av, opts) {
   else if (st === 'coque') { circ(g, 0, -r * 1.1, r * 0.42); }
   if (st !== 'longo' && st !== 'crespo') { circ(g, -r * 0.98, r * 0.1, r * 0.18, sk); circ(g, r * 0.98, r * 0.1, r * 0.18, sk); }
   circ(g, 0, 0, r, sk);
-  if (opts.photo) { g.save(); g.beginPath(); g.arc(0, 0, r * 0.985, 0, TAU); g.clip(); g.drawImage(opts.photo, -r, -r * 0.92, 2 * r, 2 * r); g.restore(); }
+  if (opts.photo) {
+    const ph = opts.photo, fw = r * 1.48, fh = Math.min(fw * ph.height / ph.width, r * 1.95);
+    g.save(); g.beginPath(); g.arc(0, 0, r * 0.99, 0, TAU); g.clip(); g.drawImage(ph, -fw / 2, r * 0.27 - fh / 2, fw, fh); g.restore();
+  }
   g.strokeStyle = 'rgba(43,34,56,.14)'; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
   g.fillStyle = hc;
   if (st === 'espetado') {
@@ -128,7 +131,7 @@ function faceFromDataURL(url) {
   return new Promise(res => {
     if (!url) return res(null);
     const im = new Image();
-    im.onload = () => { const fc = document.createElement('canvas'); fc.width = fc.height = 160; fc.getContext('2d').drawImage(im, 0, 0, 160, 160); fc.skin = photoSkin(fc); res(fc); };
+    im.onload = () => { const fc = document.createElement('canvas'); const S = Math.max(160, im.width); fc.width = fc.height = S; fc.getContext('2d').drawImage(im, 0, 0, S, S); fc.skin = photoSkin(fc); res(fc); };
     im.onerror = () => res(null);
     im.src = url;
   });
@@ -136,7 +139,7 @@ function faceFromDataURL(url) {
 
 /* ---------- foto integrada ao personagem ---------- */
 const PHOTO_STYLES = [
-  { id: 'mistura', n: '🎨 Misturado', d: 'rosto real com o cabelo do avatar' },
+  { id: 'mistura', n: '✂️ Rosto recortado', d: 'o jogo recorta só o seu rosto e coloca na cabeça do personagem, com o cabelo do avatar' },
   { id: 'desenho', n: '✏️ Desenho', d: 'a foto vira desenho animado' },
   { id: 'natural', n: '📷 Natural', d: 'a foto do jeito que foi tirada' },
 ];
@@ -188,6 +191,52 @@ function stylizePhoto(photo, av, style) {
   if (!photo) return null;
   if (style === 'natural') return photo;
   if (style === 'desenho') { const t = toonFilter(photo); t.skin = photo.skin; return t; }
-  const face = featherOval(matchSkin(toonFilter(photo), av, 0.55));
+  /* rosto recortado, com um toque de desenho para combinar com o personagem */
+  const soft = copyCanvas(photo), sg = soft.getContext('2d'); sg.globalAlpha = 0.45; sg.drawImage(toonFilter(photo), 0, 0);
+  const face = cutFace(matchSkin(soft, av, 0.5));
   return makeCartoonFace(av, { photo: face });
+}
+
+/* ---------- recorte automático do rosto (tudo no aparelho) ----------
+   1) pega a cor da pele nas bochechas; 2) marca os pixels parecidos (espaço YCbCr);
+   3) fica com a região ligada ao centro; 4) encaixa uma elipse nessa região = o rosto. */
+function ycc(r, g, b) { return [0.299 * r + 0.587 * g + 0.114 * b, 128 - 0.1687 * r - 0.3313 * g + 0.5 * b, 128 + 0.5 * r - 0.4187 * g - 0.0813 * b]; }
+function findFace(src) {
+  const S = src.width, d = src.getContext('2d').getImageData(0, 0, S, S).data;
+  const ref = avgRegion(src, .36, .5, .64, .68); const fb = { cx: .5, cy: .52, rx: .34, ry: .42, ok: false };
+  if (!ref) return fb;
+  const [, cb0, cr0] = ycc(...ref), N = S * S, m = new Uint8Array(N);
+  for (let p = 0; p < N; p++) {
+    const i = p * 4; if (d[i + 3] < 200) continue;
+    const [y, cb, cr] = ycc(d[i], d[i + 1], d[i + 2]);
+    if (y > 35 && Math.hypot(cb - cb0, cr - cr0) < 15) m[p] = 1;
+  }
+  /* região conectada ao centro do rosto */
+  const seen = new Uint8Array(N), q = [];
+  for (const [fx, fy] of [[.5, .6], [.42, .58], [.58, .58], [.5, .5], [.5, .7]]) { const p = Math.round(fy * S) * S + Math.round(fx * S); if (m[p] && !seen[p]) { seen[p] = 1; q.push(p); } }
+  let n = 0; const xs = [], ys = [];
+  while (q.length) {
+    const p = q.pop(), x = p % S, y = (p / S) | 0; n++; xs.push(x); ys.push(y);
+    for (const nb of [p - 1, p + 1, p - S, p + S]) { if (nb < 0 || nb >= N || seen[nb] || !m[nb]) continue; if ((nb % S === 0 && x === S - 1) || (x === 0 && nb % S === S - 1)) continue; seen[nb] = 1; q.push(nb); }
+  }
+  if (n < N * 0.06) return fb;
+  xs.sort((a, b) => a - b); ys.sort((a, b) => a - b);
+  const pc = (a, k) => a[Math.min(a.length - 1, Math.max(0, Math.round(k * (a.length - 1))))];
+  const x0 = pc(xs, .03), x1 = pc(xs, .97), y0 = pc(ys, .02);
+  let rx = (x1 - x0) / 2 / S, ry = Math.min((pc(ys, .97) - y0) / 2 / S, rx * 1.32);
+  rx = clamp(rx * 1.06, .1, .48); ry = clamp(Math.max(ry, rx * 1.12), .12, .5);
+  return { cx: (x0 + x1) / 2 / S, cy: y0 / S + ry, rx, ry, ok: true };
+}
+/* devolve só o rosto, recortado em elipse com borda suave */
+function cutFace(src) {
+  const f = findFace(src), S = src.width, O = 256;
+  const out = document.createElement('canvas'); out.width = O; out.height = Math.round(O * f.ry / f.rx);
+  const g = out.getContext('2d');
+  const sx = (f.cx - f.rx) * S, sy = (f.cy - f.ry) * S, sw = 2 * f.rx * S, sh = 2 * f.ry * S;
+  g.drawImage(src, sx, sy, sw, sh, 0, 0, out.width, out.height);
+  g.globalCompositeOperation = 'destination-in';
+  g.save(); g.translate(out.width / 2, out.height / 2); g.scale(1, out.height / out.width);
+  const gr = g.createRadialGradient(0, 0, O * 0.36, 0, 0, O * 0.5); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, O * 0.5, 0, TAU); g.fill(); g.restore();
+  out.found = f.ok; return out;
 }

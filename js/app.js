@@ -78,7 +78,7 @@ function renderHome() {
 }
 async function selectProfile(p) {
   App.profile = p;
-  App.photoFace = await faceFromDataURL(p.photo); restyle();
+  App.photoFace = await faceFromDataURL(p.photo); restyle(); applyOutfit(p);
   App.cartoonFace = makeCartoonFace(p.avatar);
   if (!Store.data.settings.online) p.mode = 'offline';
   game.started = false;
@@ -168,7 +168,7 @@ function drawCrop() {
 }
 function clampOff() { if (!img) return; const sc = baseScale() * zoom; const mx = Math.max(0, img.width * sc / 2 - CR), my = Math.max(0, img.height * sc / 2 - CR); off.x = clamp(off.x, -mx, mx); off.y = clamp(off.y, -my, my); }
 function makeFace() {
-  const S = 160, fc = document.createElement('canvas'); fc.width = fc.height = S; const g = fc.getContext('2d');
+  const S = 360, fc = document.createElement('canvas'); fc.width = fc.height = S; const g = fc.getContext('2d');
   const k = S / (2 * CR), sc = baseScale() * zoom * k, w = img.width * sc, h = img.height * sc;
   g.beginPath(); g.arc(S / 2, S / 2, S / 2, 0, TAU); g.clip();
   g.drawImage(img, S / 2 - w / 2 + off.x * k, S / 2 - h / 2 + off.y * k, w, h);
@@ -279,8 +279,10 @@ function buildCostumeGrid(el, inSheet) {
     drawChar(g, cs.id, getPlayerFace(), 48, 114, 0.9, 0.4, false);
     b.appendChild(cv); b.appendChild(document.createTextNode(cs.name));
     if (!ok) { const l = document.createElement('span'); l.className = 'lock'; l.textContent = '🔒 ' + cs.cost + ' ⭐'; b.appendChild(l); }
+    if (cs.custom) { const l = document.createElement('span'); l.className = 'lock'; l.textContent = p.outfit ? (cs.id === p.costume ? '✏️ trocar foto' : '👕 vestir') : '📷 criar'; b.appendChild(l); }
     b.addEventListener('click', () => {
       if (!ok) { toast('Junte ' + (cs.cost - p.stars) + ' estrelas para liberar ⭐'); Sound.tap(); return; }
+      if (cs.custom && (!p.outfit || p.costume === 'minha')) { if (inSheet) closeSheet(); setTimeout(openOutfit, inSheet ? 50 : 0); return; }
       p.costume = cs.id; Store.save(); Sound.pop();
       el.querySelectorAll('.cos').forEach(x => x.classList.remove('sel')); b.classList.add('sel');
       $('#cname').textContent = cs.name;

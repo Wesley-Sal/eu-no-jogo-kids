@@ -112,6 +112,7 @@ const OBJECTS = {
     { id: 'cama', icon: '😴', hit: [740, 170, 220, 170], spot: [700, 352], act: 'dormir' },
     { id: 'blocos', icon: '🧱', hit: [80, 300, 110, 95], spot: [200, 386], act: 'blocos' },
     { id: 'estante', icon: '📚', hit: [360, 80, 210, 90], spot: [465, 360], act: 'ler' },
+    { id: 'cavalete', icon: '🎨', hit: [592, 210, 116, 180], spot: [560, 400], act: 'pintar' },
   ],
   escola: [
     { id: 'quadro', icon: '✏️', hit: [290, 82, 380, 190], spot: [480, 352], act: 'quadro' },

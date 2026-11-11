@@ -4,6 +4,7 @@
 /* cost = estrelas necessárias para desbloquear (0 = liberada desde o início).
    Desbloqueio por conquista, nunca por sorteio nem dinheiro (sem loot boxes). */
 const COSTUMES = [
+  { id: 'minha', name: 'Minha roupa', cost: 0, custom: true },
   { id: 'heroi', name: 'Super-herói Estrela', cost: 0 },
   { id: 'princesa', name: 'Princesa', cost: 0 },
   { id: 'astronauta', name: 'Astronauta', cost: 0 },
@@ -31,10 +32,12 @@ const ST = {
   ninja: { suit: '#2F3350', legs: '#262A44', sleeve: '#2F3350', glove: '#262A44', shoe: '#1C1F33' },
   robo: { suit: '#8FA3BF', legs: '#7489A6', sleeve: '#8FA3BF', glove: '#5E6E88', shoe: '#4A566B' },
   sereia: { bodice: '#B49BFF', sleeve: null, glove: null, tail: '#2FB9A6', fin: '#7BE0D0' },
+  minha: { suit: '#5BC0FF', legs: '#3B3F5C', sleeve: '#5BC0FF', glove: null, shoe: '#2A2A2A' },
   professora: { dress: '#3F6FD8', bodice: '#F4F6FA', sleeve: '#6E9BEA', glove: null, shoe: '#2B2238' },
 };
 const DRESS = { princesa: 1, fada: 1, mago: 1, professora: 1 };
 
+function setOutfitColors(o) { if (!o) return; ST.minha.suit = ST.minha.sleeve = o.top || ST.minha.suit; ST.minha.legs = o.bottom || ST.minha.legs; }
 function arm(c, x, y, ang, sleeve, hand) { c.save(); c.translate(x, y); c.rotate(ang); fr(c, -3.5, 0, 7, 22, 3.5, sleeve); circ(c, 0, 24, 4.6, hand); c.restore(); }
 
 /* Desenha um personagem com os pés em (x,y).
@@ -94,6 +97,11 @@ function drawChar(c, id, face, x, y, s, t, moving, opt) {
   else fr(c, -15, -57, 30, 37, 10, k.suit);
 
   switch (id) {
+    case 'minha': {
+      const tex = (typeof outfitTex !== 'undefined' && outfitTex && !(typeof isOnline === 'function' && isOnline() && App.current === 's-game')) ? outfitTex : null;
+      if (tex) { c.save(); rr(c, -15, -57, 30, 37, 10); c.clip(); c.drawImage(tex, -19, -60, 38, 43); c.restore(); }
+      c.strokeStyle = 'rgba(43,34,56,.18)'; c.lineWidth = 1.5; rr(c, -15, -57, 30, 37, 10); c.stroke(); break;
+    }
     case 'heroi': fr(c, -15, -28, 30, 4, 2, '#FFD34D'); circ(c, 0, -43, 8.5, '#FFD34D'); c.fillStyle = '#FF7A2F'; starPath(c, 0, -43, 5, 6.5, 2.8); c.fill(); break;
     case 'astronauta': fr(c, -8, -49, 16, 10, 2, '#3F6FD8'); circ(c, -4, -44, 1.6, '#FF5A5A'); circ(c, 0, -44, 1.6, '#FFD34D'); circ(c, 4, -44, 1.6, '#5CE08A'); fr(c, -15, -28, 30, 4, 2, k.trim); break;
     case 'pirata':

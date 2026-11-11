@@ -38,6 +38,17 @@ const ACTS = {
     },
   },
   estudar: { dur: 4, start(P) { playerSay('Hora de estudar! 🤓', 1.5); }, end(P) { const a = 1 + Math.floor(Math.random() * 5), b = 1 + Math.floor(Math.random() * 5); playerSay(a + ' + ' + b + ' = ' + (a + b) + '! 🤓', 2.6); } },
+  pintar: {
+    dur: 0,
+    start(P) {
+      DrawPad.open('easel', (url, changed) => {
+        if (!url || !changed) return;
+        saveDrawing('quarto', url); playerSay('Olha o meu quadro! 🖼️', 2.6); burst(650, 260, 22);
+        if (!game.used.has('casa:cavalete:feito')) { game.used.add('casa:cavalete:feito'); giveStars(1, 650, 230); }
+      }, getDrawing('quarto'));
+      return 'pad';
+    },
+  },
   quiz: { dur: 0, start(P) { playerSay('Oi, professora! 🙋', 1.8); game.teacherSay = 'Vamos aprender! 📚'; game.teacherSayT = 2; Quiz.open(); return 'pad'; } },
   relogio: { dur: 0, start(P) { const d = new Date(); playerSay('Agora são ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0') + '! 🕘', 2.6); } },
   escorregar: { dur: 2.2, start() { }, end(P) { P.x = 805; P.y = 365; playerSay('Uhuuu! 🎢', 2.2); } },
@@ -271,8 +282,23 @@ function drawDuck(c, x, y, dir, t) {
   c.fillStyle = '#FF9F43'; c.beginPath(); c.moveTo(x + 14 * dir, y - 10); c.lineTo(x + 21 * dir, y - 8); c.lineTo(x + 14 * dir, y - 6); c.fill();
   circ(c, x + 11 * dir, y - 11, 1.4, '#2B2238');
 }
+function drawEasel(c, x, y, img) {
+  c.strokeStyle = '#8E5E33'; c.lineWidth = 6; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(x - 40, y + 172); c.lineTo(x - 10, y - 10); c.moveTo(x + 40, y + 172); c.lineTo(x + 10, y - 10); c.moveTo(x, y + 100); c.lineTo(x, y + 160); c.stroke();
+  fr(c, x - 52, y + 96, 104, 8, 3, '#A0662F');
+  fr(c, x - 54, y, 108, 96, 4, '#fff'); c.strokeStyle = '#B07A45'; c.lineWidth = 3; rr(c, x - 54, y, 108, 96, 4); c.stroke();
+  if (img) { c.save(); rr(c, x - 51, y + 3, 102, 90, 2); c.clip(); c.drawImage(img, x - 51, y + 3, 102, 90); c.restore(); }
+  else { c.font = '30px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.globalAlpha = .35; c.fillText('🎨', x, y + 48); c.globalAlpha = 1; }
+}
 function drawSceneBack(c, t) {
   const P = game.player, sc = P.script, ss = game.ss;
+  if (game.scene === 'casa') drawEasel(c, 650, 214, getDrawing('quarto'));
+  const hroom = Home.byScene(game.scene);
+  if (hroom) hroom.objects.forEach(o => {
+    if (o.type !== 'quadro') return; const img = getDrawing('room:' + o.id);
+    if (!img) return; fr(c, o.x, o.y, o.w, o.h, 4, '#fff'); c.save(); rr(c, o.x + 4, o.y + 4, o.w - 8, o.h - 8, 2); c.clip(); c.drawImage(img, o.x + 4, o.y + 4, o.w - 8, o.h - 8); c.restore();
+    c.strokeStyle = '#B07A45'; c.lineWidth = 4; rr(c, o.x, o.y, o.w, o.h, 4); c.stroke();
+  });
   if (game.scene === 'casa' && ss.blocks > 0) {
     const cols = ['#FF6FA8', '#5BC0FF', '#FFD34D', '#5CE08A', '#7C5CFF', '#FF9F43'];
     for (let i = 0; i < ss.blocks; i++) { const x = 240 + (i % 2 ? 3 : -3); fr(c, x, 372 - 22 * (i + 1), 26, 22, 4, cols[i % 6]); fr(c, x + 4, 372 - 22 * (i + 1) + 4, 8, 5, 2, 'rgba(255,255,255,.45)'); }

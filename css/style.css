@@ -282,3 +282,7 @@ body.playing{overflow:hidden}
 .quiz-grade.good{background:#5CC46B;box-shadow:0 8px 0 #3F9A4D}
 
 .pet-prev{width:200px;height:140px;display:block;margin:0 auto 4px;background:linear-gradient(#E6F4FF,#FFF1E3);border-radius:20px}
+
+.outfit-wrap{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:10px 0}
+.outfit-crop{width:220px;height:220px;border-radius:20px;touch-action:none;cursor:grab}
+.outfit-pv{width:170px;height:220px;border-radius:20px;background:linear-gradient(#E6F4FF,#FFF1E3)}
