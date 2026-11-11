@@ -1,0 +1,41 @@
+plugins {
+    id 'com.android.application'
+}
+
+def runNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+
+android {
+    namespace 'br.com.eunojogo.kids'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'br.com.eunojogo.kids'
+        minSdk 24
+        targetSdk 34
+        versionCode 100 + runNumber
+        versionName "6." + runNumber
+    }
+
+    /* Chave fixa: assim cada APK novo instala POR CIMA do anterior, sem perder os dados.
+       Para publicar na Play Store, troque por uma chave privada (não deixe no repositório). */
+    signingConfigs {
+        familia {
+            storeFile file('eunojogo.keystore')
+            storePassword 'eunojogo'
+            keyAlias 'eunojogo'
+            keyPassword 'eunojogo'
+        }
+    }
+    buildTypes {
+        debug { signingConfig signingConfigs.familia }
+        release { minifyEnabled false; signingConfig signingConfigs.familia }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+}

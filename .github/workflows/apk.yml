@@ -1,0 +1,46 @@
+name: Gerar APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Copiar o jogo para dentro do app
+        run: |
+          mkdir -p android/app/src/main/assets/www
+          cp -r index.html css js icons manifest.webmanifest android/app/src/main/assets/www/
+
+      - name: Compilar o APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Preparar arquivo
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk eu-no-jogo-kids.apk
+
+      - name: Publicar em Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v6.${{ github.run_number }}"
+          gh release create "$TAG" eu-no-jogo-kids.apk \
+            --title "Eu no Jogo Kids $TAG" \
+            --notes "APK para Android. Baixe **eu-no-jogo-kids.apk** no celular e toque para instalar (permita instalar de fontes desconhecidas se o celular pedir)." \
+            --latest

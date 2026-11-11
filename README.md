@@ -4,6 +4,16 @@ Jogo infantil em que a criança coloca o próprio rosto num personagem, escolhe 
 
 Esta é a versão 6 (inclui **Meu mundo**, **fachada** e **Minha casa**). O jogo completo roda no aparelho, e o modo online usa amigos simulados. O servidor (login real e amigos de verdade) é a próxima etapa.
 
+## Instalar no Android (APK)
+
+Baixe no celular: **https://github.com/Wesley-Sal/eu-no-jogo-kids/releases/latest/download/eu-no-jogo-kids.apk**
+
+Toque no arquivo baixado para instalar. Se aparecer o aviso de "fontes desconhecidas", permita para o navegador/gerenciador de arquivos.
+
+O APK é gerado automaticamente pelo GitHub (`.github/workflows/apk.yml`) a cada atualização na branch `main` e publicado em **Releases**. Ele usa uma chave fixa (`android/app/eunojogo.keystore`), então cada versão nova instala por cima da anterior sem perder os dados. Para publicar na Play Store, troque por uma chave privada.
+
+O app Android (`android/`) é um "envelope" que mostra o jogo (copiado para `assets/www`) e abre câmera/galeria para as fotos.
+
 ## Jogar no celular (GitHub Pages)
 
 1. No GitHub, abra o repositório → **Settings** → **Pages**.
