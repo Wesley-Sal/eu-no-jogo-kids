@@ -240,3 +240,26 @@ function cutFace(src) {
   g.fillStyle = gr; g.beginPath(); g.arc(0, 0, O * 0.5, 0, TAU); g.fill(); g.restore();
   out.found = f.ok; return out;
 }
+
+/* acha o rosto numa foto inteira (qualquer posição): maior região com cor de pele */
+function locateFace(img) {
+  try {
+    const M = 200, sc = M / Math.max(img.width, img.height), w = Math.max(1, Math.round(img.width * sc)), h = Math.max(1, Math.round(img.height * sc));
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); g.drawImage(img, 0, 0, w, h);
+    const d = g.getImageData(0, 0, w, h).data, N = w * h, m = new Uint8Array(N);
+    for (let p = 0; p < N; p++) { const i = p * 4, [y, cb, cr] = ycc(d[i], d[i + 1], d[i + 2]); if (y > 40 && cb > 77 && cb < 127 && cr > 135 && cr < 175) m[p] = 1; }
+    const lab = new Int32Array(N); let best = null, id = 0;
+    for (let s = 0; s < N; s++) {
+      if (!m[s] || lab[s]) continue; id++; const q = [s]; lab[s] = id; let n = 0, sx = 0, sy = 0, minY = 1e9; const xs = [];
+      while (q.length) { const p = q.pop(), x = p % w, y = (p / w) | 0; n++; sx += x; sy += y; xs.push(x); if (y < minY) minY = y;
+        if (x > 0 && m[p - 1] && !lab[p - 1]) { lab[p - 1] = id; q.push(p - 1); } if (x < w - 1 && m[p + 1] && !lab[p + 1]) { lab[p + 1] = id; q.push(p + 1); }
+        if (y > 0 && m[p - w] && !lab[p - w]) { lab[p - w] = id; q.push(p - w); } if (y < h - 1 && m[p + w] && !lab[p + w]) { lab[p + w] = id; q.push(p + w); } }
+      /* prefere regiões grandes e perto do centro */
+      const cx = sx / n, cy = sy / n, score = n * (1.2 - Math.hypot(cx / w - .5, cy / h - .45));
+      if (n > N * 0.01 && (!best || score > best.score)) { xs.sort((a, b) => a - b); const fw = xs[Math.floor(xs.length * .95)] - xs[Math.floor(xs.length * .05)]; best = { score, fw, top: minY, cx: (xs[Math.floor(xs.length * .05)] + xs[Math.floor(xs.length * .95)]) / 2 }; }
+    }
+    if (!best || best.fw < 4) return null;
+    const fh = best.fw * 1.3;
+    return { x: best.cx / sc, y: (best.top + fh * 0.5) / sc, w: best.fw / sc, h: fh / sc };
+  } catch (e) { return null; }
+}

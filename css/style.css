@@ -286,3 +286,8 @@ body.playing{overflow:hidden}
 .outfit-wrap{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:10px 0}
 .outfit-crop{width:220px;height:220px;border-radius:20px;touch-action:none;cursor:grab}
 .outfit-pv{width:170px;height:220px;border-radius:20px;background:linear-gradient(#E6F4FF,#FFF1E3)}
+
+.zoom-ctl{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:7}
+.zoom-ctl button{font:inherit;font-weight:800;font-size:20px;width:46px;height:46px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--roxo);box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer}
+.zoom-ctl #zReset{font-size:12px}
+@media(max-height:500px){.zoom-ctl button{width:38px;height:38px;font-size:17px}}

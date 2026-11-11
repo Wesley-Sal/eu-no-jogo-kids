@@ -19,7 +19,7 @@
 <body>
 <header>
   <button class="logo" id="logoHome" type="button" aria-label="Início">Eu <b>no</b> Jogo <i>Kids</i></button>
-  <span class="chip">versão 9</span>
+  <span class="chip">versão 10</span>
 </header>
 
 <main>
@@ -87,7 +87,7 @@
       <div class="crop-box">
         <canvas id="crop" aria-label="Ajuste da foto"></canvas>
         <div class="zoom" id="zoomRow" style="visibility:hidden">
-          <span>−</span><input id="zoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="Zoom da foto"><span>+</span>
+          <span>−</span><input id="zoom" type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom da foto"><span>+</span>
         </div>
       </div>
       <div>
@@ -210,6 +210,7 @@
   <!-- JOGO -->
   <section id="s-game" class="screen stage">
     <div class="game-top">
+      <button class="btn small alt" id="btnHome" title="Voltar ao início"><span>🏠</span><span class="lb keep">Início</span></button>
       <button class="me" id="meChip" type="button" title="Trocar de jogador"><canvas id="meFace"></canvas><span id="meName"></span></button>
       <div class="score" id="score">⭐ 0</div>
       <div class="mode"><button data-mode="offline" title="Offline">📴<span class="lb"> Offline</span></button><button data-mode="online" title="Online">🌐<span class="lb"> Online</span></button></div>
@@ -224,6 +225,7 @@
     </div>
     <div class="game-wrap" id="gameWrap">
       <canvas id="game" aria-label="Jogo"></canvas>
+      <div class="zoom-ctl"><button type="button" id="zIn" aria-label="Aproximar">＋</button><button type="button" id="zReset" aria-label="Tamanho normal">1×</button><button type="button" id="zOut" aria-label="Afastar">−</button></div>
       <div class="modebadge" id="modeBadge"></div>
       <div class="hint" id="hint">Toque no chão para andar · toque nos objetos ✨ para brincar</div>
     </div>

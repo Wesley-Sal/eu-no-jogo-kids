@@ -1,5 +1,5 @@
 /* Service worker: guarda os arquivos do jogo para funcionar sem internet. */
-const CACHE = 'eu-no-jogo-v9';
+const CACHE = 'eu-no-jogo-v10';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/util.js', './js/sound.js', './js/avatar.js', './js/storage.js', './js/characters.js', './js/hobbies.js',

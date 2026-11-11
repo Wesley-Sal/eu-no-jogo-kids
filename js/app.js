@@ -185,9 +185,15 @@ function onFile(e) {
   const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
   const url = URL.createObjectURL(f); const im = new Image();
   im.onload = () => {
-    img = im; zoom = 1; off = { x: 0, y: -im.height * baseScale() * 0.06 }; clampOff();
-    $('#zoom').value = 1; $('#zoomRow').style.visibility = 'visible'; $('#btnPhotoNext').disabled = false;
-    $('#photoHelp').textContent = 'Arraste a foto para deixar o rosto dentro do círculo. Use o zoom para aproximar.'; drawCrop();
+    img = im; zoom = 1; off = { x: 0, y: -im.height * baseScale() * 0.06 };
+    const f = locateFace(im);
+    if (f) { /* centraliza e aproxima o rosto: ele ocupa ~70% do círculo */
+      zoom = clamp((2 * CR * 0.7) / (f.h * baseScale()), 1, 4); const s = baseScale() * zoom;
+      off = { x: (im.width / 2 - f.x) * s, y: (im.height / 2 - f.y) * s };
+    }
+    clampOff();
+    $('#zoom').value = zoom; $('#zoomRow').style.visibility = 'visible'; $('#btnPhotoNext').disabled = false;
+    $('#photoHelp').textContent = 'Centralizei o rosto ✨ Se precisar, arraste a foto ou use o zoom para ajustar.'; drawCrop();
   };
   im.onerror = () => { $('#photoHelp').textContent = 'Não consegui abrir essa imagem. Tente uma foto JPG ou PNG.'; };
   im.src = url;
@@ -199,7 +205,7 @@ cropC.addEventListener('pointerdown', e => { if (!img) return; drag = { x: e.cli
 cropC.addEventListener('pointermove', e => { if (!drag) return; const f = CROP / cropC.getBoundingClientRect().width; off.x = drag.ox + (e.clientX - drag.x) * f; off.y = drag.oy + (e.clientY - drag.y) * f; clampOff(); drawCrop(); });
 const endDrag = () => { drag = null; cropC.classList.remove('grabbing'); };
 cropC.addEventListener('pointerup', endDrag); cropC.addEventListener('pointercancel', endDrag);
-cropC.addEventListener('wheel', e => { if (!img) return; e.preventDefault(); zoom = clamp(zoom - e.deltaY * 0.002, 1, 3); $('#zoom').value = zoom; clampOff(); drawCrop(); }, { passive: false });
+cropC.addEventListener('wheel', e => { if (!img) return; e.preventDefault(); zoom = clamp(zoom - e.deltaY * 0.002, 1, 4); $('#zoom').value = zoom; clampOff(); drawCrop(); }, { passive: false });
 $('#btnPhotoNext').addEventListener('click', () => {
   if (!img || !App.profile) return; const p = App.profile;
   App.photoFace = makeFace();
@@ -371,8 +377,30 @@ function buildDoRow() {
   refreshDoRow();
 }
 function refreshDoRow() { $$('#doRow button').forEach(b => b.classList.toggle('on', b.dataset.act === game.player.act && !game.player.script)); }
-function toWorld(e) { const r = gameC.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
-gameC.addEventListener('pointerdown', e => { const p = toWorld(e); gameTap(p.x, p.y); $('#hint').style.opacity = 0; });
+function toWorld(e) {
+  const r = gameC.getBoundingClientRect(), z = game.zoom || 1;
+  const vx = (e.clientX - r.left) / r.width * W, vy = (e.clientY - r.top) / r.height * H;
+  return { x: (game.camX || W / 2) + (vx - W / 2) / z, y: (game.camY || H / 2) + (vy - H / 2) / z };
+}
+/* zoom: botões, pinça com dois dedos e roda do mouse */
+function setZoom(z) { game.zoom = clamp(z, 1, 3); $('#zReset').textContent = (Math.round(game.zoom * 10) / 10) + '×'; }
+$('#zIn').addEventListener('click', () => setZoom((game.zoom || 1) + 0.5));
+$('#zOut').addEventListener('click', () => setZoom((game.zoom || 1) - 0.5));
+$('#zReset').addEventListener('click', () => setZoom(game.zoom > 1 ? 1 : 2.5));
+const touches = new Map(); let pinch = null;
+gameC.addEventListener('pointerdown', e => {
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: game.zoom || 1 }; return; }
+  if (touches.size > 2 || pinch) return;
+  const p = toWorld(e); gameTap(p.x, p.y); $('#hint').style.opacity = 0;
+});
+gameC.addEventListener('pointermove', e => {
+  if (!touches.has(e.pointerId)) return; touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && touches.size === 2) { const [a, b] = [...touches.values()]; setZoom(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(20, pinch.d)); }
+});
+const endTouch = e => { touches.delete(e.pointerId); if (touches.size === 0) pinch = null; };
+gameC.addEventListener('pointerup', endTouch); gameC.addEventListener('pointercancel', endTouch); gameC.addEventListener('pointerleave', endTouch);
+gameC.addEventListener('wheel', e => { e.preventDefault(); setZoom((game.zoom || 1) - e.deltaY * 0.002); }, { passive: false });
 const KEYMAP = { ArrowLeft: 'l', ArrowRight: 'r', ArrowUp: 'u', ArrowDown: 'd', a: 'l', d: 'r', w: 'u', s: 'd', A: 'l', D: 'r', W: 'u', S: 'd' };
 window.addEventListener('keydown', e => {
   if (App.current !== 's-game' || anyOverlay()) return; if (e.target.tagName === 'INPUT') return;
@@ -380,6 +408,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { const k = KEYMAP[e.key]; if (k) game.keys[k] = false; });
 $('#meChip').addEventListener('click', () => show('s-home'));
+$('#btnHome').addEventListener('click', () => show('s-home'));
 $('#btnCloset').addEventListener('click', () => openSheet('Fantasias', g => {
   const info = document.createElement('p'); info.className = 'small'; info.textContent = 'Você tem ' + App.profile.stars + ' ⭐. Pegue estrelas e brinque com os objetos ✨ para liberar fantasias novas!';
   g.appendChild(info); const grid = document.createElement('div'); grid.className = 'costumes'; g.appendChild(grid); buildCostumeGrid(grid, true);
@@ -394,7 +423,15 @@ function onSceneChange(id) {
 }
 function buildRoomBar() {
   const bar = $('#roomBar'); const pl = Home.placeOfScene(game.scene);
-  if (!pl) { bar.hidden = true; return; }
+  if (!pl) {
+    bar.hidden = false; bar.innerHTML = '';
+    const t = document.createElement('b'); t.textContent = '🏡 Minha casa:'; bar.appendChild(t);
+    Home.places().forEach(p2 => { if (!Home.roomsOf(p2.id).length) return; const b = document.createElement('button'); b.type = 'button'; b.textContent = p2.icon + ' ' + p2.name;
+      b.addEventListener('click', () => { const rs = Home.roomsOf(p2.id), f = Home.facadeOf(p2.id); game.fade = 1; gameSetScene(Home.sceneId(f || rs[0])); if (isOnline()) Friends.join(); }); bar.appendChild(b); });
+    const add = document.createElement('button'); add.type = 'button'; add.className = 'add'; add.textContent = '📷 Fotografar cômodo';
+    add.addEventListener('click', () => parentGate(() => { const p0 = Home.places()[0]; RoomEd.open(null, p0 ? p0.id : null); })); bar.appendChild(add);
+    return;
+  }
   bar.hidden = false; bar.innerHTML = '';
   const t = document.createElement('b'); t.textContent = '📍 ' + pl.icon + ' ' + pl.name + ':'; bar.appendChild(t);
   Home.roomsOf(pl.id).forEach(r => {

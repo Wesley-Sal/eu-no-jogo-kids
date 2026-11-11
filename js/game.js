@@ -379,7 +379,15 @@ function drawHud(c) {
   }
 }
 function gameRender(c, t) {
-  const k = game.rs || DPR; c.setTransform(k, 0, 0, k, 0, 0);
+  const k = game.rs || DPR, z = game.zoom || 1;
+  /* câmera: segue o personagem quando há zoom */
+  const pp = playerPose(t), hw = W / (2 * z), hh = H / (2 * z);
+  const tx = clamp(pp.x, hw, W - hw), ty = clamp(pp.y - 60, hh, H - hh);
+  if (game.camX == null || z === 1) { game.camX = tx; game.camY = ty; }
+  else { game.camX += (tx - game.camX) * 0.12; game.camY += (ty - game.camY) * 0.12; }
+  game.camX = clamp(game.camX, hw, W - hw); game.camY = clamp(game.camY, hh, H - hh);
+  c.setTransform(k, 0, 0, k, 0, 0); c.fillStyle = '#1E1736'; c.fillRect(0, 0, W, H);
+  c.setTransform(k * z, 0, 0, k * z, k * (W / 2 - game.camX * z), k * (H / 2 - game.camY * z));
   c.drawImage(getBg(game.scene), 0, 0, W, H);
   drawSceneBack(c, t);
   if (game.marker) { const m = game.marker; c.strokeStyle = `rgba(91,63,217,${1 - m.t / 0.7})`; c.lineWidth = 3; c.beginPath(); c.ellipse(m.x, m.y, 10 + m.t * 30, 4 + m.t * 10, 0, 0, TAU); c.stroke(); }
@@ -437,6 +445,7 @@ function gameRender(c, t) {
     c.restore();
   });
   c.globalAlpha = 1;
+  c.setTransform(k, 0, 0, k, 0, 0);
   if (!document.body.classList.contains('playing')) drawHud(c);
   if (game.fade > 0) { c.fillStyle = 'rgba(43,34,56,' + game.fade + ')'; c.fillRect(0, 0, W, H); }
 }
