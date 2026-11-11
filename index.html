@@ -19,7 +19,7 @@
 <body>
 <header>
   <button class="logo" id="logoHome" type="button" aria-label="Início">Eu <b>no</b> Jogo <i>Kids</i></button>
-  <span class="chip">versão 7</span>
+  <span class="chip">versão 8</span>
 </header>
 
 <main>
@@ -216,6 +216,7 @@
       <span class="spacer"></span>
       <button class="btn small alt" id="btnCloset" title="Fantasias"><span>👗</span><span class="lb">Fantasias</span></button>
       <button class="btn small pink" id="btnMap" title="Mapa e Minha casa"><span>🗺️</span><span class="lb keep">Mapa</span></button>
+      <button class="btn small alt" id="btnPets" title="Bichinhos"><span>🐾</span><span class="lb">Bichinhos</span></button>
       <button class="btn small alt" id="btnAvatarEdit" title="Avatar"><span>🙂</span><span class="lb">Avatar</span></button>
       <button class="btn small alt" id="btnPhotoEdit" title="Foto"><span>📷</span><span class="lb">Foto</span></button>
       <button class="btn small alt" id="btnParentsGame" title="Área dos pais">⚙️</button>
@@ -279,6 +280,14 @@
   </div>
 </div>
 
+<!-- professora: quiz -->
+<div class="modal" id="quizModal" role="dialog" aria-modal="true">
+  <div class="mbox quiz-box">
+    <div class="draw-head"><h2 id="quizTitle"></h2><button class="btn small alt" id="quizClose">Fechar</button></div>
+    <div id="quizBody"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script src="js/util.js"></script>
@@ -294,6 +303,8 @@
 <script src="js/room-editor.js"></script>
 <script src="js/world.js"></script>
 <script src="js/drawpad.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/pets.js"></script>
 <script src="js/app.js"></script>
 <script>
   /* instala como app (funciona sem internet) quando servido por https, ex.: GitHub Pages */

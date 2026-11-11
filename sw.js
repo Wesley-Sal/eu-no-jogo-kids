@@ -1,10 +1,10 @@
 /* Service worker: guarda os arquivos do jogo para funcionar sem internet. */
-const CACHE = 'eu-no-jogo-v7';
+const CACHE = 'eu-no-jogo-v8';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/util.js', './js/sound.js', './js/avatar.js', './js/storage.js', './js/characters.js', './js/hobbies.js',
   './js/scenes.js', './js/home.js', './js/game.js', './js/friends.js', './js/room-editor.js', './js/world.js',
-  './js/drawpad.js', './js/app.js', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
+  './js/drawpad.js', './js/quiz.js', './js/pets.js', './js/app.js', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
 ];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

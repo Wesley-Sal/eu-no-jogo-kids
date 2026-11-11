@@ -383,6 +383,7 @@ $('#btnCloset').addEventListener('click', () => openSheet('Fantasias', g => {
   g.appendChild(info); const grid = document.createElement('div'); grid.className = 'costumes'; g.appendChild(grid); buildCostumeGrid(grid, true);
 }));
 $('#btnMap').addEventListener('click', () => World.open());
+$('#btnPets').addEventListener('click', () => openPetAdopt());
 function onSceneChange(id) {
   const p = App.profile; if (p) { p.scene = id; const pl = Home.placeOfScene(id); if (pl) pl.lastRoom = id.slice(5); Store.save(); }
   const room = Home.byScene(id);
@@ -414,7 +415,7 @@ function openSheet(title, build) { $('#sheetTitle').textContent = title; const b
 function closeSheet() { $('#sheet').classList.remove('open'); }
 $('#sheetClose').addEventListener('click', closeSheet);
 $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
-function anyOverlay() { return $('#sheet').classList.contains('open') || $('#gate').classList.contains('open') || $('#timeup').classList.contains('open') || $('#drawModal').classList.contains('open'); }
+function anyOverlay() { return $('#sheet').classList.contains('open') || $('#gate').classList.contains('open') || $('#timeup').classList.contains('open') || $('#drawModal').classList.contains('open') || $('#quizModal').classList.contains('open'); }
 
 /* ---------- desenhos da criança (guardados no perfil, só no aparelho) ---------- */
 const drawCache = {};
@@ -556,6 +557,7 @@ function loop(now) {
 Store.load();
 RoomEd.init();
 DrawPad.init();
+Quiz.init();
 World.init();
 Sound.on = Store.data.settings.sound;
 show('s-home');

@@ -31,8 +31,9 @@ const ST = {
   ninja: { suit: '#2F3350', legs: '#262A44', sleeve: '#2F3350', glove: '#262A44', shoe: '#1C1F33' },
   robo: { suit: '#8FA3BF', legs: '#7489A6', sleeve: '#8FA3BF', glove: '#5E6E88', shoe: '#4A566B' },
   sereia: { bodice: '#B49BFF', sleeve: null, glove: null, tail: '#2FB9A6', fin: '#7BE0D0' },
+  professora: { dress: '#3F6FD8', bodice: '#F4F6FA', sleeve: '#6E9BEA', glove: null, shoe: '#2B2238' },
 };
-const DRESS = { princesa: 1, fada: 1, mago: 1 };
+const DRESS = { princesa: 1, fada: 1, mago: 1, professora: 1 };
 
 function arm(c, x, y, ang, sleeve, hand) { c.save(); c.translate(x, y); c.rotate(ang); fr(c, -3.5, 0, 7, 22, 3.5, sleeve); circ(c, 0, 24, 4.6, hand); c.restore(); }
 

@@ -38,6 +38,7 @@ const ACTS = {
     },
   },
   estudar: { dur: 4, start(P) { playerSay('Hora de estudar! 🤓', 1.5); }, end(P) { const a = 1 + Math.floor(Math.random() * 5), b = 1 + Math.floor(Math.random() * 5); playerSay(a + ' + ' + b + ' = ' + (a + b) + '! 🤓', 2.6); } },
+  quiz: { dur: 0, start(P) { playerSay('Oi, professora! 🙋', 1.8); game.teacherSay = 'Vamos aprender! 📚'; game.teacherSayT = 2; Quiz.open(); return 'pad'; } },
   relogio: { dur: 0, start(P) { const d = new Date(); playerSay('Agora são ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0') + '! 🕘', 2.6); } },
   escorregar: { dur: 2.2, start() { }, end(P) { P.x = 805; P.y = 365; playerSay('Uhuuu! 🎢', 2.2); } },
   balancar: { dur: 5.5, start(P) { playerSay('Weee! 🎵', 1.6); }, end(P) { playerSay('Muito divertido!', 2); } },
@@ -126,6 +127,7 @@ function gameSetScene(id) {
   const P = game.player; P.x = 480; P.y = clamp(470, WALK.y0, WALK.y1); P.tx = null; P.goal = null; P.script = null; P.act = null;
   spawnStars();
   game.dog = id === 'parque' ? { name: 'Bolinha', x: 300, y: 450, tx: 300, ty: 450, wait: 1, moving: false, dir: 1, happy: 0, follow: 0, say: null, sayT: 0 } : null;
+  Pets.enter(id);
   if (isOnline()) Friends.make();
   playerSay(room ? 'Cheguei: ' + room.emoji + ' ' + room.name : 'Cheguei! 👋', 2.4);
   refreshDoRow();
@@ -134,6 +136,7 @@ function gameSetScene(id) {
 function gameTap(x, y) {
   const P = game.player; Sound.tap();
   if (P.script) { if (P.script.act === 'escorregar') return; endScript(); }
+  const pl = Pets.at(x, y); if (pl) { Pets.tap(pl); refreshDoRow(); return; }
   const d = game.dog;
   if (d && Math.hypot(x - d.x, (y - (d.y - 22)) * 1.2) < 48) {
     P.act = null; P.goal = { dog: true }; P.tx = clamp(d.x + (P.x < d.x ? -55 : 55), WALK.x0, WALK.x1); P.ty = clamp(d.y, WALK.y0, WALK.y1);
@@ -182,7 +185,7 @@ function gameUpdate(dt) {
       P.moving = true; P.goal = null; P.tx = null;
     } else if (P.tx !== null) {
       P.moving = true;
-      if (moveToward(P, P.tx, P.ty, 230, dt)) { P.tx = null; P.moving = false; if (P.goal) { const o = P.goal; P.goal = null; if (o.dog) petDog(); else startObject(o); } }
+      if (moveToward(P, P.tx, P.ty, 230, dt)) { P.tx = null; P.moving = false; if (P.goal) { const o = P.goal; P.goal = null; if (o.pet) Pets.menu(o.pet); else if (o.dog) petDog(); else startObject(o); } }
     }
     /* estrelas */
     for (let i = game.stars.length - 1; i >= 0; i--) {
@@ -202,6 +205,12 @@ function gameUpdate(dt) {
   if (P.sayT > 0) { P.sayT -= dt; if (P.sayT <= 0) P.say = null; }
   game.ss.chestT = (game.ss.chestT || 0) + dt;
   if (game.dog) dogUpdate(dt);
+  Pets.update(dt);
+  if (game.scene === 'escola') {
+    if (game.teacherSayT > 0) { game.teacherSayT -= dt; if (game.teacherSayT <= 0) game.teacherSay = null; }
+    game.teacherT = (game.teacherT || 4) - dt;
+    if (game.teacherT <= 0) { game.teacherT = 14 + Math.random() * 8; if (!game.teacherSay) { game.teacherSay = pick(['Quem quer responder uma pergunta? 🙋', 'Toque em mim para o quiz! 📝', 'Vamos tirar nota 10? ⭐']); game.teacherSayT = 3; } }
+  }
   if (isOnline()) Friends.update(dt);
   for (let i = game.parts.length - 1; i >= 0; i--) {
     const p = game.parts[i]; p.life -= dt; if (p.life <= 0) { game.parts.splice(i, 1); continue; }
@@ -354,7 +363,13 @@ function gameRender(c, t) {
     ell(c, s.x, s.y, 14, 4, 0, 'rgba(30,20,60,.15)'); circ(c, s.x, by, 22, 'rgba(255,226,122,.35)');
     c.fillStyle = '#FFD34D'; starPath(c, s.x, by, 5, 16, 7, -Math.PI / 2 + Math.sin(s.ph * 0.5) * 0.2); c.fill(); c.strokeStyle = '#F0A800'; c.lineWidth = 2; c.stroke();
   } }));
+  if (game.scene === 'escola') items.push({ y: 352, draw: () => {
+    if (!game.teacherFace) game.teacherFace = makeCartoonFace({ skin: 3, hairColor: 2, hairStyle: 'coque', eyes: 0, glasses: true, freckles: false, bow: false });
+    drawChar(c, 'professora', game.teacherFace, 705, 352, depthScale(352) * 1.12, t * 0.8, false);
+    nameTag(c, 705, 358, '👩‍🏫 Prof. Ana', false);
+  } });
   if (game.scene === 'parque' && game.ss.sand > 0) items.push({ y: 548, draw: () => drawSandCastle(c, game.ss.sand) });
+  Pets.draw(items, c, t);
   const dog = game.dog;
   if (dog) items.push({ y: dog.y, draw: () => {
     drawDog(c, dog.x, dog.y, depthScale(dog.y) * 0.95, t, dog.moving, dog.dir, dog.happy > 0);
@@ -384,6 +399,8 @@ function gameRender(c, t) {
   drawHints(c, t);
   (online ? game.bots : []).forEach(o => { if (o.say) bubble(c, o.x, o.y - 140 * depthScale(o.y), o.say); });
   if (dog && dog.say) bubble(c, dog.x, dog.y - 70, dog.say);
+  Pets.bubbles(c, t);
+  if (game.scene === 'escola' && game.teacherSay) bubble(c, 705, 352 - 150 * depthScale(352) * 1.12, game.teacherSay);
   if (dog && dog.happy > 0) { c.font = '20px ' + FONT; c.textAlign = 'center'; for (let i = 0; i < 2; i++) { const p = (t * 0.7 + i / 2) % 1; c.globalAlpha = 1 - p; c.fillText('💛', dog.x + (i ? 18 : -14), dog.y - 60 - p * 40); } c.globalAlpha = 1; }
   if (P.say) { const top = pose.lying ? pose.y - 60 : pose.y - 140 * pose.s; bubble(c, pose.lying ? pose.x - 70 : pose.x, top, P.say); }
   game.floats.forEach(f => { c.globalAlpha = Math.min(1, f.life); c.font = '800 22px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 5; c.strokeStyle = '#fff'; c.strokeText(f.text, f.x, f.y); c.fillStyle = '#E08A00'; c.fillText(f.text, f.x, f.y); });
@@ -409,16 +426,17 @@ function drawSandCastle(c, p) {
   if (p > 0.75) tower(785, 474, 20, 34);
   if (p > 0.88) { c.strokeStyle = '#8E5E33'; c.lineWidth = 2; c.beginPath(); c.moveTo(795, 468); c.lineTo(795, 446); c.stroke(); c.fillStyle = '#FF6FA8'; c.beginPath(); c.moveTo(795, 446); c.lineTo(812, 451); c.lineTo(795, 457); c.closePath(); c.fill(); }
 }
-function drawDog(c, x, y, s, t, moving, dir, happy) {
+function drawDog(c, x, y, s, t, moving, dir, happy, col) {
+  const body = col || '#D9A066', legc = shade(body, -0.22), ear = shade(body, -0.38);
   c.save(); c.translate(x, y); c.scale(s * dir, s);
   ell(c, 0, 0, 26, 6, 0, 'rgba(30,20,60,.16)');
   const leg = moving ? Math.sin(t * 14) * 4 : 0, wag = Math.sin(t * (happy ? 22 : 8)) * 0.5, bob = moving ? Math.abs(Math.sin(t * 14)) * 2 : 0;
   c.translate(0, -bob);
-  [[-16, leg], [-8, -leg], [8, leg], [16, -leg]].forEach(([lx, o]) => fr(c, lx - 2.5 + o * 0.5, -17, 5, 17, 2.5, '#B07A45'));
-  c.save(); c.translate(-21, -26); c.rotate(-0.7 + wag); fr(c, -3, -17, 6, 17, 3, '#D9A066'); c.restore();
-  ell(c, 0, -23, 24, 12, 0, '#D9A066'); ell(c, -6, -26, 8, 6, 0, '#FFF1DC');
-  circ(c, 22, -38, 13, '#D9A066'); ell(c, 32, -34, 7, 5, 0, '#FFF1DC'); circ(c, 38, -35, 2.6, '#2B2238');
-  circ(c, 24, -41, 2.2, '#2B2238'); ell(c, 14, -41, 5, 10, 0.45 + Math.sin(t * 6) * 0.1, '#8E5E33');
+  [[-16, leg], [-8, -leg], [8, leg], [16, -leg]].forEach(([lx, o]) => fr(c, lx - 2.5 + o * 0.5, -17, 5, 17, 2.5, legc));
+  c.save(); c.translate(-21, -26); c.rotate(-0.7 + wag); fr(c, -3, -17, 6, 17, 3, body); c.restore();
+  ell(c, 0, -23, 24, 12, 0, body); ell(c, -6, -26, 8, 6, 0, '#FFF1DC');
+  circ(c, 22, -38, 13, body); ell(c, 32, -34, 7, 5, 0, '#FFF1DC'); circ(c, 38, -35, 2.6, '#2B2238');
+  circ(c, 24, -41, 2.2, body === '#3B2A20' ? '#fff' : '#2B2238'); ell(c, 14, -41, 5, 10, 0.45 + Math.sin(t * 6) * 0.1, ear);
   if (happy) ell(c, 33, -28, 2.6, 4.5, 0, '#FF6F8A');
   fr(c, 11, -30, 11, 4, 2, '#E2464A'); circ(c, 16, -24, 2.2, '#FFD34D');
   c.restore();

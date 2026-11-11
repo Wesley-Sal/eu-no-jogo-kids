@@ -261,3 +261,24 @@ body.playing{overflow:hidden}
   .stage-title{font-size:18px}
   .stage .hint{top:48px;font-size:12px;padding:3px 10px}
 }
+
+/* professora / quiz */
+.quiz-box{max-width:640px;text-align:center}
+.quiz-say{font-size:19px;font-weight:700;margin:6px 0 14px}
+.quiz-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.quiz-themes .hob small{display:block;font-size:12px;color:var(--roxo);font-weight:800;margin-top:2px}
+.quiz-prog{display:flex;gap:5px;justify-content:center;margin:4px 0 14px}
+.quiz-prog span{width:22px;height:8px;border-radius:4px;background:#E4DBFF}
+.quiz-prog span.now{background:var(--roxo)}
+.quiz-prog span.ok{background:#5CC46B}
+.quiz-prog span.bad{background:#FF8A8A}
+.quiz-q{font-size:clamp(22px,5vw,30px);font-weight:800;line-height:1.25;margin:6px 0 18px;word-break:break-word}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quiz-opts button{font:inherit;font-weight:800;font-size:clamp(17px,4vw,22px);padding:14px 10px;border-radius:18px;border:3px solid var(--borda);background:#F7F3FF;cursor:pointer;color:var(--tinta);min-height:64px}
+.quiz-opts button.ok{background:#DDF7E4;border-color:#5CC46B}
+.quiz-opts button.bad{background:#FFE3E3;border-color:#FF8A8A}
+.quiz-fb{min-height:30px;margin-top:12px;font-weight:800;font-size:18px;color:var(--roxo)}
+.quiz-grade{width:130px;height:130px;margin:6px auto 4px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:70px;font-weight:800;color:#fff;background:#FF9F43;box-shadow:0 8px 0 #D97F2A}
+.quiz-grade.good{background:#5CC46B;box-shadow:0 8px 0 #3F9A4D}
+
+.pet-prev{width:200px;height:140px;display:block;margin:0 auto 4px;background:linear-gradient(#E6F4FF,#FFF1E3);border-radius:20px}

@@ -117,6 +117,7 @@ const OBJECTS = {
     { id: 'quadro', icon: '✏️', hit: [290, 82, 380, 190], spot: [480, 352], act: 'quadro' },
     { id: 'carteira', icon: '🪑', hit: [96, 318, 108, 62], spot: [150, 392], act: 'estudar' },
     { id: 'relogio', icon: '🕘', hit: [100, 100, 100, 100], spot: [250, 356], act: 'relogio' },
+    { id: 'professora', icon: '📝', hit: [672, 250, 66, 112], spot: [645, 392], act: 'quiz' },
   ],
   parque: [
     { id: 'escorrega', icon: '🎢', hit: [620, 170, 170, 165], spot: [655, 348], act: 'escorregar' },

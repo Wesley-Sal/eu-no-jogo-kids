@@ -1,8 +1,8 @@
-# Eu no Jogo Kids — versão 6
+# Eu no Jogo Kids — versão 8
 
 Jogo infantil em que a criança coloca o próprio rosto num personagem, escolhe fantasias e brinca em casa, na escola, no parque e no castelo, com amigos.
 
-Esta é a versão 6 (inclui **Meu mundo**, **fachada** e **Minha casa**). O jogo completo roda no aparelho, e o modo online usa amigos simulados. O servidor (login real e amigos de verdade) é a próxima etapa.
+Esta é a versão 8 (inclui **Meu mundo**, **fachada** e **Minha casa**). O jogo completo roda no aparelho, e o modo online usa amigos simulados. O servidor (login real e amigos de verdade) é a próxima etapa.
 
 ## Instalar no Android (APK)
 
@@ -60,6 +60,10 @@ python3 -m http.server 8080
   - Offline: aparece a **foto real** (fica só no aparelho). Online: aparece uma **versão desenhada**, gerada só com as cores e a posição dos móveis (`Home.recipe()`).
   - Para criar um cômodo é preciso passar pela pergunta para adultos. Na área dos pais dá para editar e excluir cômodos.
 - **Desenho livre (`drawpad.js`):** o quadro da escola e o hobby Desenhar abrem uma prancheta para desenhar com o dedo. Tem cores (giz no quadro, lápis no papel), 3 espessuras, borracha, desfazer, limpar e carimbos (⭐❤️🌈🌸🐶☀️🦋🚗). O desenho fica guardado no perfil (só no aparelho) e aparece no quadro da escola e no cavalete do jogo.
+- **Foto integrada ao personagem (`stylizePhoto`):** no modo offline a foto aparece em 3 estilos: **Misturado** (rosto real com o cabelo/orelhas do avatar e a pele ajustada), **Desenho** (filtro de desenho animado) e **Natural**.
+- **Tela cheia:** jogo e mapa ocupam a tela toda, com botões em cima e hobbies/falas embaixo. No APK as barras do Android somem.
+- **Professora Ana (`quiz.js`):** na escola, toque na professora, escolha o tema (Matemática, Letras e palavras, Animais, Cores e formas, Natureza e corpo) e responda 10 perguntas adaptadas à idade. No fim sai a **nota de 0 a 10**, estrelas e a melhor nota de cada tema fica guardada no boletim.
+- **Bichinhos (`pets.js`):** botão 🐾 para adotar cachorro, gato, pássaro ou tartaruga, escolher a cor e dar nome. Eles vivem nas casas da família (e na Casa do jogo). Ao tocar: carinho, dar comida, brincar ou "vem comigo" (segue a criança).
 - **Hobbies animados:** jogar bola (embaixadinhas), desenhar (cavalete), dançar, ler, cantar e pular corda. Amigos que têm o mesmo hobby vêm brincar junto.
 - **Estrelas:** rodadas de 5 estrelas, com bônus ao completar e +1 na primeira vez que usa cada objeto.
 - **Frases prontas** em vez de chat livre. Sons sintetizados, sem arquivos de áudio.
